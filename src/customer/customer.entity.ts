@@ -2,10 +2,7 @@
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Entity, Column } from 'typeorm';
 
-@Entity({
-  name: 'customer_info',
-  engine: 'InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
-})
+@Entity()
 class CustomerInfoEntity extends CoreEntity {
   @Column()
   customerEmail: string;

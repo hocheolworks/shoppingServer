@@ -1,6 +1,12 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class CreateCustomerInfoDto {
   @ApiProperty({
@@ -8,8 +14,9 @@ export class CreateCustomerInfoDto {
     example: 'hocheolworks@hyeongwookbabo.com',
     required: true,
   })
-  @IsNotEmpty()
-  @IsEmail()
+  @IsNotEmpty({ message: '이메일을 올바른 형식으로 입력해주세요' })
+  @Length(10, 100, { message: '이메일을 올바른 형식으로 입력해주세요' })
+  @IsEmail({ message: '이메일을 올바른 형식으로 입력해주세요' })
   customerEmail: string;
 
   @ApiProperty({
@@ -17,7 +24,9 @@ export class CreateCustomerInfoDto {
     example: '호철웍',
     required: true,
   })
-  @IsNotEmpty()
+  @Length(2, 20)
+  @IsNotEmpty({ message: '이름을 확인해주세요' })
+  @Matches(/^[가-힣]+$/, { message: '이름을 올바르게 입력해주세요' })
   customerName: string;
 
   @ApiProperty({
@@ -25,8 +34,9 @@ export class CreateCustomerInfoDto {
     example: 'abcd1234',
     required: true,
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: '비밀번호를 확인해주세요' })
+  @IsString({ message: '비밀번호를 확인해주세요' })
+  @Length(5, 30, { message: '비밀번호를 5자 이상, 30자 미만으로 입력해주세요' })
   customerPassword: string;
 
   @ApiProperty({
@@ -34,8 +44,9 @@ export class CreateCustomerInfoDto {
     example: 'abcd1234',
     required: true,
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: '비밀번호를 확인해주세요' })
+  @IsString({ message: '비밀번호를 확인해주세요' })
+  @Length(5, 30, { message: '비밀번호를 5자 이상, 30자 미만으로 입력해주세요' })
   customerPassword2: string;
 
   @ApiProperty({
@@ -43,7 +54,8 @@ export class CreateCustomerInfoDto {
     example: '010-2041-7503',
     required: true,
   })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({ message: '휴대폰 번호를 입력해주세요.' })
+  @IsString({ message: '휴대폰 번호를 올바른 형식으로 입력해주세요.' })
+  @Length(10, 30, { message: '휴대폰 번호를 올바른 형식으로 입력해주세요.' })
   customerPhoneNumber: string;
 }

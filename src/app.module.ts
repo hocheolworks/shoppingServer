@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerModule } from './customer/customer.module';
@@ -7,7 +8,7 @@ import CustomerInfoEntity from './customer/customer.entity';
 /**
  * ENV 설정
  */
- let envFilePath = 'envs/.env.dev';
+const envFilePath = 'envs/.env.dev';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import CustomerInfoEntity from './customer/customer.entity';
       synchronize: true,
       autoLoadEntities: true,
     }),
-    CustomerModule
+    CustomerModule,
   ],
 })
 export class AppModule {}

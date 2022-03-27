@@ -1,19 +1,29 @@
+/* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 
-@Entity({name : 'customer_info'})
-class CustomerInfoEntity extends CoreEntity{
-  @PrimaryGeneratedColumn()
-  customerId: string;
+@Entity({
+  name: 'customer_info',
+  engine: 'InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
+})
+class CustomerInfoEntity extends CoreEntity {
+  @Column()
+  customerEmail: string;
 
   @Column()
-  password: string;
+  customerName: string;
 
   @Column()
-  birthday: string;
+  customerPassword: string;
 
   @Column()
-  balance: number;
+  customerPhoneNumber: string;
+
+  @Column({ nullable: true })
+  token: string;
+
+  @Column({ default: 'USER' })
+  userRole: string;
 }
 
-export default CustomerInfoEntity
+export default CustomerInfoEntity;

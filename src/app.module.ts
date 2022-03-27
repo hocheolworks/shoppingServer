@@ -26,6 +26,7 @@ const envFilePath = 'envs/.env.dev';
       entities: [CustomerInfoEntity],
       synchronize: true,
       autoLoadEntities: true,
+      charset: 'utf8_unicode_ci',
     }),
     CustomerModule,
   ],

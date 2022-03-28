@@ -3,7 +3,7 @@ import { NewCustomerInfo } from './customer.interface';
 import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import CustomerInfoEntity from './customer.entity';
+import CustomerInfoEntity from './entities/customer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()

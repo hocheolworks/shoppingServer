@@ -5,9 +5,9 @@ import { CustomerModule } from './customer/customer.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
-import CustomerInfoEntity from './customer/customer.entity';
-import ProductInfoEntity from './product/product.entity';
-import OrderInfoEntity from './order/order.entity';
+import CustomerInfoEntity from './customer/entities/customer.entity';
+import ProductInfoEntity from './product/entities/product.entity';
+import OrderInfoEntity from './order/entities/order.entity';
 
 /**
  * ENV 설정
@@ -21,7 +21,7 @@ const envFilePath = 'envs/.env.dev';
       envFilePath,
     }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'mariadb',
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT),
       username: process.env.DB_USERNAME,

@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Entity, Column } from 'typeorm';
+import OrderInfoEntity from 'src/order/entities/order.entity';
+import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'customer_info' })
 class CustomerInfoEntity extends CoreEntity {
   @Column()
   customerEmail: string;
@@ -21,6 +22,9 @@ class CustomerInfoEntity extends CoreEntity {
 
   @Column({ default: 'USER' })
   userRole: string;
+
+  @OneToMany(() => OrderInfoEntity, (order) => order.customer)
+  orders: OrderInfoEntity[];
 }
 
 export default CustomerInfoEntity;

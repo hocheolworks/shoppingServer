@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerModule } from './customer/customer.module';
 import { ConfigModule } from '@nestjs/config';
+import { EmailModule } from './email/email.module';
 import CustomerInfoEntity from './customer/customer.entity';
 
 /**
@@ -29,6 +30,7 @@ const envFilePath = 'envs/.env.dev';
       charset: 'utf8_unicode_ci',
     }),
     CustomerModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

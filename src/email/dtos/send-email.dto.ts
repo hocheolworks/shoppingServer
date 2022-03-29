@@ -38,14 +38,6 @@ export class SendEmailDto {
   title: string;
 
   @ApiProperty({
-    description: '보내려는 메일의 내용',
-    example: '<h1>이벤트 당첨 안내</h1> <p>축하드립니다.</p> ',
-  })
-  @Length(1, 10000)
-  @IsNotEmpty()
-  body: string;
-
-  @ApiProperty({
     description: '고객의 이름',
     example: '호철웍',
   })

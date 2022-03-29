@@ -2,6 +2,7 @@ import { SendEmailDto } from './dtos/send-email.dto';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import emailConstants from './email.constants';
+import * as uuid from 'uuid';
 
 @Injectable()
 export class EmailService {
@@ -59,5 +60,7 @@ export class EmailService {
     transporter.sendMail(params).catch((e: Error) => {
       throw new BadRequestException(e);
     });
+
+    console.log('email sented');
   }
 }

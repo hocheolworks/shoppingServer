@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
 import CustomerInfoEntity from 'src/customer/entities/customer.entity';
-import { Entity, Column, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
-import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
 import OrderItemInfoEntity from './orderItem.entity';
 
 @Entity({ name: 'order_info' })

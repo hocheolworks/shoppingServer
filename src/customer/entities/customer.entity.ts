@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
 import OrderInfoEntity from 'src/order/entities/order.entity';
-import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 
 @Entity({ name: 'customer_info' })
 class CustomerInfoEntity extends CoreEntity {

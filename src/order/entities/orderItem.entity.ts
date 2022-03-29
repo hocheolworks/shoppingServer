@@ -10,7 +10,6 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 import OrderInfoEntity from './order.entity';
 
 @Entity({ name: 'orderItem_info' })
@@ -23,7 +22,6 @@ class OrderItemInfoEntity extends CoreEntity {
   order: OrderInfoEntity;
 
   @OneToOne(() => ProductInfoEntity, {
-    onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     nullable: false,
   })

@@ -44,4 +44,12 @@ export class SendEmailDto {
   @Length(1, 10000)
   @IsNotEmpty()
   body: string;
+
+  @ApiProperty({
+    description: '고객의 이름',
+    example: '호철웍',
+  })
+  @Length(1, 10000)
+  @IsNotEmpty()
+  customerName: string;
 }

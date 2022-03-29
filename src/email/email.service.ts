@@ -1,6 +1,7 @@
 import { SendEmailDto } from './dtos/send-email.dto';
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import emailConstants from './email.constants';
 
 @Injectable()
 export class EmailService {
@@ -19,10 +20,10 @@ export class EmailService {
     });
 
     await transporter.verify().catch((e: Error) => {
-      throw new BadRequestException(`유효하지 않은 이메일입니다. ${e}`);
+      throw new BadRequestException(
+        `${emailConstants.errorMessages.INVALID_FROM},${e}`,
+      );
     });
-
-    console.log(transporter);
 
     const { to, from, title } = sendEmailDto;
     const body = `<!DOCTYPE html>
@@ -43,15 +44,16 @@ export class EmailService {
     <table align="center" class="table">
         <tr>
             <td style="background-color: #ffffff; padding: 40px 30px 40px 30px; text-align: center">
-                <h3>안녕하세요, 호정님. <span th:text="{firstName}" th:remove="tag"></span>!</h3>
+                <h3>안녕하세요, ${sendEmailDto.customerName}고객님</h3>
                 <p>일조유통에 가입해 주셔서 진심으로 감사합니다.</p>
                 <p>아래 링크를 클릭하시면 회원가입이 완료됩니다. </p>
-                <a th:href="대충 클릭하면 등록완료 화면으로 이동하는 링크">confirm registration</a>
+                <a href="https://www.naver.com">회원 가입 완료</a>
             </td>
         </tr>
     </table>
     </body>
     </html>`;
+
     const params = { to, from, subject: title, html: body };
 
     transporter.sendMail(params).catch((e: Error) => {

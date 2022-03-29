@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import CustomerInfoEntity from './customer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import * as uuid from 'uuid';
 
 @Injectable()
 export class CustomerService {
@@ -24,6 +25,9 @@ export class CustomerService {
       customerName,
       customerPhoneNumber,
     } = createCustomerInfoDto;
+
+    const token = uuid.v1();
+
     //회원가입 로직
     if (customerPassword === customerPassword2) {
       let newCustomerInfo: NewCustomerInfo = {
@@ -31,6 +35,7 @@ export class CustomerService {
         customerPassword,
         customerName,
         customerPhoneNumber,
+        token,
       };
 
       if (await this.customerInfoRepository.count({ customerEmail })) {

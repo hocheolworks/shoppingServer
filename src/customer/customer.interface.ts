@@ -4,4 +4,5 @@ export interface NewCustomerInfo {
   customerPassword: string;
   customerName: string;
   customerPhoneNumber: string;
+  token: string;
 }

@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
+import OrderItemInfoEntity from './entities/orderItem.entity';
+import ProductInfoEntity from 'src/product/entities/product.entity';
 
 @Injectable()
 export class OrderService {
@@ -14,6 +16,11 @@ export class OrderService {
   async getOrdersByCustomerId(
     customerId: number,
   ): Promise<SelectOrderInfoDto[]> {
-    return this.orderInfoRepository.find({ customer: { id: customerId } });
+    return this.orderInfoRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem_info')
+      .leftJoinAndSelect('orderItem_info.product', 'product_info')
+      .where('order.customer.id = :id', { id: customerId })
+      .getMany();
   }
 }

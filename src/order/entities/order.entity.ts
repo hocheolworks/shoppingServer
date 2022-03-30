@@ -27,6 +27,9 @@ class OrderInfoEntity extends CoreEntity {
   @Column({ type: 'int', comment: '주문 총 가격' })
   orderTotalPrice: number;
 
+  @Column()
+  customerId: number;
+
   @ManyToOne(() => CustomerInfoEntity, (customer) => customer.orders, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',

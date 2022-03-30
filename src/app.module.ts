@@ -30,6 +30,7 @@ const envFilePath = 'envs/.env.dev';
       entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity],
       synchronize: true,
       autoLoadEntities: true,
+      logging: true,
     }),
     CustomerModule,
     ProductModule,

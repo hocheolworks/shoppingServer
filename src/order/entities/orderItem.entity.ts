@@ -23,7 +23,8 @@ class OrderItemInfoEntity extends CoreEntity {
 
   @OneToOne(() => ProductInfoEntity, {
     onUpdate: 'CASCADE',
-    nullable: false,
+    onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn()
   product: ProductInfoEntity;

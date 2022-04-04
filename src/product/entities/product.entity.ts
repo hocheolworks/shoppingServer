@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, OneToMany, getRepository, AfterLoad } from 'typeorm';
+import ReviewInfoEntity from './review.entity';
 
 @Entity({ name: 'product_info' })
 class ProductInfoEntity extends CoreEntity {
@@ -15,6 +16,37 @@ class ProductInfoEntity extends CoreEntity {
 
   @Column({ type: 'int', comment: '최소 수량' })
   productMinimumEA: number;
+
+  @OneToMany(() => ReviewInfoEntity, (review) => review.product)
+  reviews: ReviewInfoEntity[];
+
+  productRating: number;
+  productRatingCount: number;
+
+  @AfterLoad()
+  calculatedRating = async () => {
+    const result = await getRepository(ReviewInfoEntity)
+      .createQueryBuilder('review')
+      .where('review.productId = :id', { id: this.id })
+      .getRawAndEntities();
+
+    const ratingsAboveZero = result?.entities?.filter(
+      (x) => x.ReviewRating > 0,
+    );
+    const count = ratingsAboveZero.length;
+
+    if (count > 0) {
+      this.productRating =
+        ratingsAboveZero.reduce((acc, curr) => {
+          return acc + curr.ReviewRating;
+        }, 0) / count;
+
+      this.productRatingCount = count;
+    } else {
+      this.productRating = 0;
+      this.productRatingCount = 0;
+    }
+  };
 }
 
 export default ProductInfoEntity;

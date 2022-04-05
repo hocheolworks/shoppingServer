@@ -19,7 +19,7 @@ class CustomerInfoEntity extends CoreEntity {
   customerPhoneNumber: string;
 
   @Column({ nullable: true })
-  token: string;
+  signupVerifyToken: string;
 
   @Column({ default: 'USER' })
   userRole: string;

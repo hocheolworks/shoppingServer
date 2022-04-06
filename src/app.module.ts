@@ -9,6 +9,8 @@ import CustomerInfoEntity from './customer/entities/customer.entity';
 import ProductInfoEntity from './product/entities/product.entity';
 import OrderInfoEntity from './order/entities/order.entity';
 import { EmailModule } from './email/email.module';
+import { AccountModule } from './account/account.module';
+import AccountInfoEntity from './account/entities/account.entitiy';
 
 /**
  * ENV 설정
@@ -28,7 +30,7 @@ const envFilePath = 'envs/.env.dev';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity],
+      entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity, AccountInfoEntity],
       synchronize: false,
       autoLoadEntities: true,
       logging: true,
@@ -37,6 +39,7 @@ const envFilePath = 'envs/.env.dev';
     ProductModule,
     OrderModule,
     EmailModule,
+    AccountModule,
   ],
 })
 export class AppModule {}

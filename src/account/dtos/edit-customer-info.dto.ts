@@ -3,6 +3,13 @@ import { IsEmail, IsNotEmpty, IsString, Length, Matches } from "class-validator"
 
 export class EditCusromerInfoDto {
     @ApiProperty({
+        description: '임시',
+        example: '5',
+        required: false,
+    })
+    id: number | undefined;
+
+    @ApiProperty({
         description: '유저의 이메일',
         example: 'hocheolworks@nugunha.com',
         required: true,

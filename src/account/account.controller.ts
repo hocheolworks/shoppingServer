@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { EditCusromerInfoDto } from './dtos/edit-customer-info.dto';
 
@@ -6,10 +6,11 @@ import { EditCusromerInfoDto } from './dtos/edit-customer-info.dto';
 export class AccountController {
     constructor(private readonly accountService: AccountService) {}
 
-    @Post('/user/edit')
+    @Put('/edit')
     async editCustomerInfo(
         @Body() editCustomerInfoDto: EditCusromerInfoDto,
     ): Promise<string> {
+        console.log('abcdefg');
         return await this.accountService.printHello(editCustomerInfoDto);
     }
 }

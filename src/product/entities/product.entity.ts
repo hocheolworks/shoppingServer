@@ -31,14 +31,14 @@ class ProductInfoEntity extends CoreEntity {
       .getRawAndEntities();
 
     const ratingsAboveZero = result?.entities?.filter(
-      (x) => x.ReviewRating > 0,
+      (x) => x.reviewRating > 0,
     );
     const count = ratingsAboveZero.length;
 
     if (count > 0) {
       this.productRating =
         ratingsAboveZero.reduce((acc, curr) => {
-          return acc + curr.ReviewRating;
+          return acc + curr.reviewRating;
         }, 0) / count;
 
       this.productRatingCount = count;

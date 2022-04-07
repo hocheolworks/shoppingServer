@@ -17,4 +17,21 @@ export class ProductService {
       .leftJoin('product.reviews', 'review_info')
       .getMany();
   }
+
+  getProductById(id: number): Promise<SelectProductInfoDto> {
+    return this.productInfoRepository
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id: id })
+      .leftJoinAndSelect('product.reviews', 'review_info')
+      .leftJoinAndSelect('review_info.customer', 'customer_info')
+      .getOne();
+  }
+
+  getProductsByIdList(data: Array<number>): Promise<SelectProductInfoDto[]> {
+    console.log(data);
+    return this.productInfoRepository
+      .createQueryBuilder('product')
+      .whereInIds(data)
+      .getMany();
+  }
 }

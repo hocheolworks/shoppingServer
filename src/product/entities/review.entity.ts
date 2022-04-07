@@ -21,10 +21,10 @@ class ReviewInfoEntity extends CoreEntity {
   product: ProductInfoEntity;
 
   @Column()
-  ReviewMessage: string;
+  reviewMessage: string;
 
-  @Column({ type: 'double' })
-  ReviewRating: number;
+  @Column({ type: 'int' })
+  reviewRating: number;
 }
 
 export default ReviewInfoEntity;

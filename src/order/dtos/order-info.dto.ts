@@ -47,15 +47,6 @@ export class SelectOrderInfoDto {
   orderCustomerName: string;
 
   @ApiProperty({
-    description: '주문자 이메일',
-    example: 'asdf@naver.com',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsEmail()
-  orderEmail: string;
-
-  @ApiProperty({
     description: '주문자 연락처',
     example: '010-1234-1234',
     required: true,

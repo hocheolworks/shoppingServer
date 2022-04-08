@@ -9,13 +9,10 @@ class OrderInfoEntity extends CoreEntity {
   @Column({ type: 'varchar', length: 16, comment: '주문자 성명' })
   orderCustomerName: string;
 
-  @Column({ type: 'varchar', length: 128, comment: '이메일' })
-  orderEmail: string;
-
   @Column({ type: 'varchar', length: 32, comment: '연락처' })
   orderPhoneNumber: string;
 
-  @Column({ type: 'int', comment: '우편 번호' })
+  @Column({ type: 'varchar', length: 16, comment: '우편 번호' })
   orderPostIndex: number;
 
   @Column({ type: 'varchar', length: 256, comment: '배송 주소' })
@@ -23,6 +20,9 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({ type: 'varchar', length: 256, comment: '상세 주소' })
   orderAddressDetail: string;
+
+  @Column({ type: 'varchar', length: 64, comment: '배송 메모(50자 이내)' })
+  orderMemo: string;
 
   @Column({ type: 'int', comment: '주문 총 가격' })
   orderTotalPrice: number;

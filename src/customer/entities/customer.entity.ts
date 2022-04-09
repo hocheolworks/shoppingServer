@@ -1,11 +1,10 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { Entity, Column } from 'typeorm';
+import OrderInfoEntity from 'src/order/entities/order.entity';
+import ReviewInfoEntity from 'src/product/entities/review.entity';
+import { Entity, Column, OneToMany } from 'typeorm';
 
-@Entity({
-  name: 'customer_info',
-  engine: 'InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci',
-})
+@Entity({ name: 'customer_info' })
 class CustomerInfoEntity extends CoreEntity {
   @Column()
   customerEmail: string;
@@ -24,6 +23,12 @@ class CustomerInfoEntity extends CoreEntity {
 
   @Column({ default: 'USER' })
   userRole: string;
+
+  @OneToMany(() => OrderInfoEntity, (order) => order.customer)
+  orders: OrderInfoEntity[];
+
+  @OneToMany(() => ReviewInfoEntity, (review) => review.customer)
+  reviews: ReviewInfoEntity[];
 }
 
 export default CustomerInfoEntity;

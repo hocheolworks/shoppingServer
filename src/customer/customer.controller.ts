@@ -11,9 +11,9 @@ export class CustomerController {
 
   @Post()
   async createAccount(
-    @Body() creatCustomerInfoDto: CreateCustomerInfoDto,
+    @Body() createCustomerInfoDto: CreateCustomerInfoDto,
   ): Promise<NewCustomerInfo> {
-    return await this.customerService.createAccount(creatCustomerInfoDto);
+    return await this.customerService.createAccount(createCustomerInfoDto);
   }
 
   @Post('/email-verify')

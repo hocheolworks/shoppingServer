@@ -1,6 +1,6 @@
 import { SendEmailDto } from './dtos/send-email.dto';
 import { Injectable, BadRequestException } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 import emailConstants from './email.constants';
 
 @Injectable()

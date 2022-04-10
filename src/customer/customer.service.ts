@@ -39,6 +39,8 @@ export class CustomerService {
 
     const signupVerifyToken = uuid.v1();
 
+    const verifyNumber = createCustomerInfoDto.verifyNumber;
+
     //회원가입 로직
     if (customerPassword === customerPassword2) {
       let newCustomerInfo: NewCustomerInfo = {
@@ -70,7 +72,11 @@ export class CustomerService {
         customerName: customerName,
       };
 
-      this.sendCustomerJoinEmail(registrationEmailData, signupVerifyToken);
+      this.sendCustomerJoinEmail(
+        registrationEmailData,
+        signupVerifyToken,
+        verifyNumber,
+      );
 
       return result;
     }
@@ -140,10 +146,12 @@ export class CustomerService {
   private async sendCustomerJoinEmail(
     sendEmailDto: SendEmailDto,
     signupVerifyToken: string,
+    verifyNumber: number,
   ) {
     return await this.emailService.sendCustomerJoinEmail(
       sendEmailDto,
       signupVerifyToken,
+      verifyNumber,
     );
   }
 }

@@ -58,4 +58,6 @@ export class CreateCustomerInfoDto {
   @IsString({ message: '휴대폰 번호를 올바른 형식으로 입력해주세요.' })
   @Length(10, 30, { message: '휴대폰 번호를 올바른 형식으로 입력해주세요.' })
   customerPhoneNumber: string;
+
+  verifyNumber: number;
 }

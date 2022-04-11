@@ -1,6 +1,6 @@
 import { SendEmailDto } from './dtos/send-email.dto';
 import { Injectable, BadRequestException } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 import emailConstants from './email.constants';
 
 @Injectable()
@@ -11,9 +11,10 @@ export class EmailService {
   async sendCustomerJoinEmail(
     sendEmailDto: SendEmailDto,
     signupVerifyToken: string,
+    verifyNumber: number,
   ) {
     const baseUrl = 'http://localhost:8080'; // TODO: config
-    const url = `${baseUrl}/api/v1/customer/email-verify?signupVerifyToken=${signupVerifyToken}`;
+    //    const url = `${baseUrl}/api/v1/customer/email-verify?signupVerifyToken=${signupVerifyToken}`;
 
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -52,9 +53,8 @@ export class EmailService {
             <td style="background-color: #ffffff; padding: 40px 30px 40px 30px; text-align: center">
                 <h3>안녕하세요, ${sendEmailDto.customerName}고객님</h3>
                 <p>일조유통에 가입해 주셔서 진심으로 감사합니다.</p>
-                <p>아래 버튼을 클릭하시면 회원가입이 완료됩니다. </p>
-                <form action="${url}" method="POST">
-                <button>가입확인</button>
+                <p>아래 인증번호를 가입 화면에 입력해주시면 회원 가입이 완료됩니다. </p>
+                <span>인증번호 : ${verifyNumber}</span>
               </form>
             </td>
         </tr>

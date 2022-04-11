@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from './email/email.module';
 import { ProductModule } from './product/product.module';
 import { OrderModule } from './order/order.module';
+import { AuthModule } from './auth/auth.module';
 import CustomerInfoEntity from './customer/entities/customer.entity';
 import ProductInfoEntity from './product/entities/product.entity';
 import OrderInfoEntity from './order/entities/order.entity';
@@ -37,6 +38,7 @@ const envFilePath = 'envs/.env.dev';
     EmailModule,
     ProductModule,
     OrderModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

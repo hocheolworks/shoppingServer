@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import ProductInfoEntity from 'src/product/entities/product.entity';
+import { ManyToOne, Repository } from 'typeorm';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
 import OrderItemInfoEntity from './entities/orderItem.entity';
@@ -13,6 +14,9 @@ export class OrderService {
     
     @InjectRepository(OrderItemInfoEntity)
     private readonly orderItemInfoRepository: Repository<OrderItemInfoEntity>,
+
+    @InjectRepository(ProductInfoEntity)
+    private readonly productInfoRepository: Repository<ProductInfoEntity>,
   ) {}
 
   async getOrdersByCustomerId(
@@ -32,11 +36,7 @@ export class OrderService {
 
     console.log(insertOrderInfoDto);
     
-    this.orderInfoRepository
-    .createQueryBuilder('order_info')
-    .insert()
-    .into(OrderInfoEntity)
-    .values({
+    let newOrderInfo = this.orderInfoRepository.create({
       customerId: insertOrderInfoDto.customerId,
       orderTotalPrice : insertOrderInfoDto.orderTotalPrice,
       orderMemo: insertOrderInfoDto.orderMemo,
@@ -45,39 +45,26 @@ export class OrderService {
       orderPostIndex: insertOrderInfoDto.orderPostIndex,
       orderCustomerName: insertOrderInfoDto.orderCustomerName,
       orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
-    })
-    .execute();
+    });
+    const result = await this.orderInfoRepository.save(newOrderInfo);
 
-    let orderId = this.orderInfoRepository
-    .createQueryBuilder('order')
-    .select('order.id')
-    .where('order.customerId = :id', {id: insertOrderInfoDto.customerId})
-    .orderBy('createdAt')
-    .getOne();
-
-    let newOrderId = (await orderId).id;
     let keyArray = Object.keys(insertOrderInfoDto.productsId)
     let val =0;
     let key = 0;
     for(let i=0;i<keyArray.length; i++){
       key = parseInt(keyArray[i]);
+      const product = await this.productInfoRepository.findOne({id:key});
+
       val = insertOrderInfoDto.productsId[key];
-      console.log(key + ":" + val);
-      this.orderItemInfoRepository
-      .createQueryBuilder()
-      .insert()
-      .into(OrderItemInfoEntity)
-      .values({
-        productId: Number(key),
-        orderId: newOrderId,
+      
+      this.orderItemInfoRepository.save({
         orderItemEA: val,
-        orderItemTotalPrice: key * val,  
+        orderItemTotalPrice: key *val,
+        order: newOrderInfo,
+        product: product,
       })
-      .execute()
     }
 
     return true
   }
-
-
 }

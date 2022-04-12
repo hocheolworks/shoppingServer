@@ -30,7 +30,7 @@ const envFilePath = 'envs/.env.dev';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity, OrderItemInfoEntity],
-      synchronize: false,
+      synchronize: true,
       autoLoadEntities: true,
       logging: true,
     }),

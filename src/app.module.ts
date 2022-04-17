@@ -11,6 +11,7 @@ import CustomerInfoEntity from './customer/entities/customer.entity';
 import ProductInfoEntity from './product/entities/product.entity';
 import OrderInfoEntity from './order/entities/order.entity';
 import OrderItemInfoEntity from './order/entities/orderItem.entity';
+import CartItemInfoEntity from './customer/entities/cartItem.entity';
 
 /**
  * ENV 설정
@@ -30,7 +31,13 @@ const envFilePath = 'envs/.env.dev';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity, OrderItemInfoEntity],
+      entities: [
+        CustomerInfoEntity,
+        ProductInfoEntity,
+        OrderInfoEntity,
+        OrderItemInfoEntity,
+        CartItemInfoEntity,
+      ],
       synchronize: true,
       autoLoadEntities: true,
       logging: true,

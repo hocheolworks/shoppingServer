@@ -3,6 +3,7 @@ import { CoreEntity } from 'src/common/entities/core.entity';
 import OrderInfoEntity from 'src/order/entities/order.entity';
 import ReviewInfoEntity from 'src/product/entities/review.entity';
 import { Entity, Column, OneToMany } from 'typeorm';
+import CartItemInfoEntity from './cartItem.entity';
 
 @Entity({ name: 'customer_info' })
 class CustomerInfoEntity extends CoreEntity {
@@ -32,6 +33,9 @@ class CustomerInfoEntity extends CoreEntity {
 
   @OneToMany(() => ReviewInfoEntity, (review) => review.customer)
   reviews: ReviewInfoEntity[];
+
+  @OneToMany(() => CartItemInfoEntity, (cartItem) => cartItem.customer)
+  cartItems: CartItemInfoEntity[];
 }
 
 export default CustomerInfoEntity;

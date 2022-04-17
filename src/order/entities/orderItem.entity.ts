@@ -20,12 +20,11 @@ class OrderItemInfoEntity extends CoreEntity {
   })
   order: OrderInfoEntity;
 
-  @OneToOne(() => ProductInfoEntity, {
+  @ManyToOne(() => ProductInfoEntity, (product) => product.orderItems, {
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
     nullable: true,
   })
-  @JoinColumn()
   product: ProductInfoEntity;
 
   @Column({ type: 'int', comment: '상품 주문 개수' })

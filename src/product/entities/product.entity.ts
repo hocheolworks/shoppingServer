@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
+import CartItemInfoEntity from 'src/customer/entities/cartItem.entity';
+import OrderItemInfoEntity from 'src/order/entities/orderItem.entity';
 import { Entity, Column, OneToMany, getRepository, AfterLoad } from 'typeorm';
 import ReviewInfoEntity from './review.entity';
 
@@ -19,6 +21,12 @@ class ProductInfoEntity extends CoreEntity {
 
   @OneToMany(() => ReviewInfoEntity, (review) => review.product)
   reviews: ReviewInfoEntity[];
+
+  @OneToMany(() => OrderItemInfoEntity, (orderItem) => orderItem.product)
+  orderItems: OrderItemInfoEntity[];
+
+  @OneToMany(() => CartItemInfoEntity, (cartItem) => cartItem.product)
+  cartItems: CartItemInfoEntity[];
 
   productRating: number;
   productRatingCount: number;

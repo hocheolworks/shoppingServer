@@ -100,3 +100,34 @@ export class SelectOrderInfoDto {
   @IsDate()
   deletedAt: Date;
 }
+
+export class InsertOrderInfoDto extends SelectOrderInfoDto {
+  @ApiProperty({
+    description: '아직 정하지 못했음', // TODO : 사용할지 말지 정해야함, 사용안하면 삭제할것
+    example: [],
+    required: false,
+  })
+  orderItems:Array<string>;
+
+  @ApiProperty({
+      description: '주문 상품 목록',
+      example: {"1": 2, "5":1},
+      required: true,
+  })
+  productsId:Map<string, number>;
+
+  @ApiProperty({
+    description: '고객 id',
+    example: 1,
+    required: true,
+  })
+  customerId:number;
+
+  @ApiProperty({
+    description: '배송 메오',
+    example: '문앞에 놔주세요',
+    required: false,
+  })
+  @IsString()
+  orderMemo:string | null;
+}

@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import CustomerInfoEntity from './customer/entities/customer.entity';
 import ProductInfoEntity from './product/entities/product.entity';
 import OrderInfoEntity from './order/entities/order.entity';
+import OrderItemInfoEntity from './order/entities/orderItem.entity';
 
 /**
  * ENV 설정
@@ -29,7 +30,7 @@ const envFilePath = 'envs/.env.dev';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity],
+      entities: [CustomerInfoEntity, ProductInfoEntity, OrderInfoEntity, OrderItemInfoEntity],
       synchronize: true,
       autoLoadEntities: true,
       logging: true,

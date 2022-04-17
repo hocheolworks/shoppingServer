@@ -21,7 +21,7 @@ class OrderInfoEntity extends CoreEntity {
   @Column({ type: 'varchar', length: 256, comment: '상세 주소' })
   orderAddressDetail: string;
 
-  @Column({ type: 'varchar', length: 64, comment: '배송 메모(50자 이내)' })
+  @Column({ type: 'varchar', length: 64, comment: '배송 메모(50자 이내)', default: ''})
   orderMemo: string;
 
   @Column({ type: 'int', comment: '주문 총 가격' })

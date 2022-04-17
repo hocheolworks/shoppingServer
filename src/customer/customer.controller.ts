@@ -7,7 +7,6 @@ import { NewCustomerInfo } from './customer.interface';
 import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { throws } from 'assert';
 @Controller('customer')
 export class CustomerController {
   constructor(

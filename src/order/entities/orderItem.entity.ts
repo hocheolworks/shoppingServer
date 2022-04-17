@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import { CoreEntity } from 'src/common/entities/core.entity';
-import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import ProductInfoEntity from 'src/product/entities/product.entity';
 import {
   Entity,

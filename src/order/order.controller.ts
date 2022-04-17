@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { SelectOrderInfoDto } from './dtos/order-info.dto';
+import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import { OrderService } from './order.service';
 
 @Controller('order')
@@ -9,7 +9,7 @@ export class OrderController {
   @Post('/success')
   async paymentRequest(
     @Body() query: { paymentKey: string; orderId: string; amount: number },
-  ): Promise<Object> {
+  ): Promise<any> {
     return await this.orderService.paymentRequest(
       query.paymentKey,
       query.orderId,
@@ -21,5 +21,12 @@ export class OrderController {
     @Param('customer_id') customerId,
   ): Promise<SelectOrderInfoDto[]> {
     return await this.orderService.getOrdersByCustomerId(customerId);
+  }
+
+  @Post('/payment')
+  async updateOrderList(
+    @Body() insertOrderInfoDto: Partial<InsertOrderInfoDto>,
+  ) {
+    return this.orderService.insertOrders(insertOrderInfoDto);
   }
 }

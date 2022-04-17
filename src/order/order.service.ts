@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import ProductInfoEntity from 'src/product/entities/product.entity';
 import { Repository } from 'typeorm';
-import { SelectOrderInfoDto } from './dtos/order-info.dto';
+import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
-import axios from 'axios';
-import { config } from 'process';
+import OrderItemInfoEntity from './entities/orderItem.entity';
+import http from 'https';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(OrderInfoEntity)
     private readonly orderInfoRepository: Repository<OrderInfoEntity>,
+
+    @InjectRepository(OrderItemInfoEntity)
+    private readonly orderItemInfoRepository: Repository<OrderItemInfoEntity>,
+
+    @InjectRepository(ProductInfoEntity)
+    private readonly productInfoRepository: Repository<ProductInfoEntity>,
   ) {}
 
   async getOrdersByCustomerId(
@@ -28,7 +35,7 @@ export class OrderService {
     paymentKey: string,
     orderId: string,
     amount: number,
-  ): Promise<Object> {
+  ): Promise<any> {
     const options = {
       method: 'POST',
       hostname: 'api.tosspayments.com',
@@ -41,7 +48,6 @@ export class OrderService {
       },
     };
 
-    const http = require('https');
     const req = http.request(options, function (res) {
       const chunks = [];
 
@@ -58,5 +64,41 @@ export class OrderService {
     req.write(JSON.stringify({ amount: amount, orderId: orderId }));
 
     return await req.end();
+  }
+  async insertOrders(
+    insertOrderInfoDto: Partial<InsertOrderInfoDto>,
+  ): Promise<OrderInfoEntity> {
+    console.log(insertOrderInfoDto);
+
+    const newOrderInfo = this.orderInfoRepository.create({
+      customerId: insertOrderInfoDto.customerId,
+      orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
+      orderMemo: insertOrderInfoDto.orderMemo,
+      orderAddress: insertOrderInfoDto.orderAddress,
+      orderAddressDetail: insertOrderInfoDto.orderAddressDetail,
+      orderPostIndex: insertOrderInfoDto.orderPostIndex,
+      orderCustomerName: insertOrderInfoDto.orderCustomerName,
+      orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
+    });
+    const result = await this.orderInfoRepository.save(newOrderInfo);
+
+    const keyArray = Object.keys(insertOrderInfoDto.productsId);
+    let val = 0;
+    let key = 0;
+    for (let i = 0; i < keyArray.length; i++) {
+      key = parseInt(keyArray[i]);
+      const product = await this.productInfoRepository.findOne({ id: key });
+
+      val = insertOrderInfoDto.productsId[key];
+
+      this.orderItemInfoRepository.save({
+        orderItemEA: val,
+        orderItemTotalPrice: key * val,
+        order: newOrderInfo,
+        product: product,
+      });
+    }
+
+    return result;
   }
 }

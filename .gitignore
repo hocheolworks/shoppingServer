@@ -39,3 +39,7 @@ envs
 
 #api test
 .http
+
+
+#
+.eslintrc.js

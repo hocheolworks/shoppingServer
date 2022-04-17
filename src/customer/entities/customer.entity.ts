@@ -25,7 +25,7 @@ class CustomerInfoEntity extends CoreEntity {
   signupVerifyToken: string;
 
   @Column({ default: 'USER' })
-  userRole: string;
+  customerRole: string;
 
   @OneToMany(() => OrderInfoEntity, (order) => order.customer)
   orders: OrderInfoEntity[];

@@ -7,6 +7,7 @@ import { NewCustomerInfo } from './customer.interface';
 import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CustomerService } from './customer.service';
+import { SelectCartItemInfoDto } from './dtos/cartItem-info.dto';
 @Controller('customer')
 export class CustomerController {
   constructor(
@@ -31,5 +32,12 @@ export class CustomerController {
   @Post('/login')
   async login(@Body() loginRequestDto: LoginRequestDto) {
     return await this.authService.jwtLogIn(loginRequestDto);
+  }
+
+  @Get('/:customer_id/cart')
+  async getCartItems(
+    @Param('customer_id') customerId,
+  ): Promise<SelectCartItemInfoDto[]> {
+    return await this.customerService.getCartItems(customerId);
   }
 }

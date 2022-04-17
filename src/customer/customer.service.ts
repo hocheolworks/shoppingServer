@@ -17,12 +17,16 @@ import customerConstants from './customer.constants';
 import * as bcrypt from 'bcrypt';
 import * as uuid from 'uuid';
 import * as jwt from 'jsonwebtoken';
+import CartItemInfoEntity from './entities/cartItem.entity';
+import { SelectCartItemInfoDto } from './dtos/cartItem-info.dto';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(CustomerInfoEntity)
     private readonly customerInfoRepository: Repository<CustomerInfoEntity>,
+    @InjectRepository(CartItemInfoEntity)
+    private readonly cartItemInfoRepository: Repository<CartItemInfoEntity>,
     private readonly emailService: EmailService,
   ) {}
 
@@ -153,5 +157,14 @@ export class CustomerService {
       signupVerifyToken,
       verifyNumber,
     );
+  }
+
+  async getCartItems(customerId: number): Promise<SelectCartItemInfoDto[]> {
+    return await this.cartItemInfoRepository
+      .createQueryBuilder('cartItem')
+      .leftJoinAndSelect('cartItem.customer', 'customer_info')
+      .leftJoinAndSelect('cartItem.product', 'product_info')
+      .where('cartItem.customerId = :customerId', { customerId: customerId })
+      .getMany();
   }
 }

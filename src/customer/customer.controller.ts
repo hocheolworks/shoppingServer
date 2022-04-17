@@ -23,10 +23,10 @@ export class CustomerController {
   }
 
   @Post('/email-verify')
-  async verifyEmail(@Query() verifyEmaildto: VerifyEmailDto): Promise<string> {
-    const { signupVerifyToken } = verifyEmaildto;
-
-    return await this.customerService.verifyEmail(signupVerifyToken);
+  async verifyEmail(
+    @Body() createCustomerInfoDto: CreateCustomerInfoDto,
+  ): Promise<NewCustomerInfo> {
+    return await this.customerService.emailValidation(createCustomerInfoDto);
   }
 
   @Post('/login')

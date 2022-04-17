@@ -10,7 +10,6 @@ export class EmailService {
    */
   async sendCustomerJoinEmail(
     sendEmailDto: SendEmailDto,
-    signupVerifyToken: string,
     verifyNumber: number,
   ) {
     const baseUrl = 'http://localhost:8080'; // TODO: config

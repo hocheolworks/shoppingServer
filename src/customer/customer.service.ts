@@ -26,6 +26,30 @@ export class CustomerService {
     private readonly emailService: EmailService,
   ) {}
 
+  async emailValidation(
+    createCustomerInfoDto: CreateCustomerInfoDto,
+  ): Promise<any> {
+    const { customerEmail, customerPassword, customerPassword2, customerName } =
+      createCustomerInfoDto;
+
+    const verifyNumber = createCustomerInfoDto.verifyNumber;
+
+    if (customerPassword === customerPassword2) {
+      if (await this.customerInfoRepository.count({ customerEmail })) {
+        throw new BadRequestException('이미 가입된 이메일입니다.');
+      }
+
+      const registrationEmailData: SendEmailDto = {
+        from: '일진유통 slogupemailmoduletest@gmail.com', //TODO 하드코딩
+        to: customerEmail,
+        title: '일진유통 회원가입 확인 안내',
+        customerName: customerName,
+      };
+
+      this.sendCustomerJoinEmail(registrationEmailData, verifyNumber);
+    }
+  }
+
   async createAccount(
     createCustomerInfoDto: CreateCustomerInfoDto,
   ): Promise<NewCustomerInfo> {
@@ -38,8 +62,6 @@ export class CustomerService {
     } = createCustomerInfoDto;
 
     const signupVerifyToken = uuid.v1();
-
-    const verifyNumber = createCustomerInfoDto.verifyNumber;
 
     //회원가입 로직
     if (customerPassword === customerPassword2) {
@@ -64,19 +86,6 @@ export class CustomerService {
 
       newCustomerInfo = this.customerInfoRepository.create(newCustomerInfo);
       const result = await this.customerInfoRepository.save(newCustomerInfo);
-
-      const registrationEmailData: SendEmailDto = {
-        from: '일진유통 slogupemailmoduletest@gmail.com', //TODO 하드코딩
-        to: customerEmail,
-        title: '일진유통 회원가입 확인 안내',
-        customerName: customerName,
-      };
-
-      this.sendCustomerJoinEmail(
-        registrationEmailData,
-        signupVerifyToken,
-        verifyNumber,
-      );
 
       return result;
     }
@@ -145,12 +154,10 @@ export class CustomerService {
 
   private async sendCustomerJoinEmail(
     sendEmailDto: SendEmailDto,
-    signupVerifyToken: string,
     verifyNumber: number,
   ) {
     return await this.emailService.sendCustomerJoinEmail(
       sendEmailDto,
-      signupVerifyToken,
       verifyNumber,
     );
   }

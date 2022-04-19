@@ -40,7 +40,6 @@ const envFilePath = 'envs/.env.dev';
       ],
       synchronize: true,
       autoLoadEntities: true,
-      logging: true,
     }),
     CustomerModule,
     EmailModule,

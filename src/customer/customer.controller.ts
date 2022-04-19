@@ -5,9 +5,21 @@ import { CustomerLogInDto } from './dtos/customer-login.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { NewCustomerInfo } from './customer.interface';
 import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CustomerService } from './customer.service';
-import { SelectCartItemInfoDto } from './dtos/cartItem-info.dto';
+import {
+  inputCartItemInfoDto,
+  SelectCartItemInfoDto,
+} from './dtos/cartItem-info.dto';
 @Controller('customer')
 export class CustomerController {
   constructor(
@@ -34,10 +46,47 @@ export class CustomerController {
     return await this.authService.jwtLogIn(loginRequestDto);
   }
 
-  @Get('/:customer_id/cart')
+  @Get('/:customerId/cart')
   async getCartItems(
-    @Param('customer_id') customerId,
+    @Param('customerId') customerId,
   ): Promise<SelectCartItemInfoDto[]> {
     return await this.customerService.getCartItems(customerId);
+  }
+
+  @Put('/:customerId/cart')
+  async updateCartItem(
+    @Param('customerId') customerId,
+    @Body() inputCartItemData: inputCartItemInfoDto,
+  ): Promise<SelectCartItemInfoDto[]> {
+    return await this.customerService.updateCartItem(
+      customerId,
+      inputCartItemData,
+    );
+  }
+
+  @Post('/:customerId/cart')
+  async insertCartItem(
+    @Param('customerId') customerId,
+    @Body() inputCartItemData: inputCartItemInfoDto,
+  ): Promise<SelectCartItemInfoDto[]> {
+    return await this.customerService.insertCartItem(
+      customerId,
+      inputCartItemData,
+    );
+  }
+
+  @Delete('/:customerId/cart')
+  async deleteCartItem(
+    @Param('customerId') customerId,
+    @Query('productId') productId,
+  ): Promise<SelectCartItemInfoDto[]> {
+    return await this.customerService.deleteCartItem(customerId, productId);
+  }
+
+  @Delete('/:customerId/cart/all')
+  async clearCart(
+    @Param('customerId') customerId,
+  ): Promise<SelectCartItemInfoDto[]> {
+    return await this.customerService.clearCart(customerId);
   }
 }

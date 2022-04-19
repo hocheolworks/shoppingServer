@@ -71,3 +71,23 @@ export class SelectCartItemInfoDto {
   @IsDate()
   deletedAt: Date;
 }
+
+export class inputCartItemInfoDto {
+  @ApiProperty({
+    description: '상품 id',
+    example: 2,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  productId: number;
+
+  @ApiProperty({
+    description: '상품 개수',
+    example: 10,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  productCount: number;
+}

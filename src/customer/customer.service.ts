@@ -18,7 +18,10 @@ import * as bcrypt from 'bcrypt';
 import * as uuid from 'uuid';
 import * as jwt from 'jsonwebtoken';
 import CartItemInfoEntity from './entities/cartItem.entity';
-import { SelectCartItemInfoDto } from './dtos/cartItem-info.dto';
+import {
+  inputCartItemInfoDto,
+  SelectCartItemInfoDto,
+} from './dtos/cartItem-info.dto';
 
 @Injectable()
 export class CustomerService {
@@ -167,11 +170,76 @@ export class CustomerService {
   }
 
   async getCartItems(customerId: number): Promise<SelectCartItemInfoDto[]> {
+    if (customerId === undefined || isNaN(customerId)) return null;
+
     return await this.cartItemInfoRepository
       .createQueryBuilder('cartItem')
       .leftJoinAndSelect('cartItem.customer', 'customer_info')
       .leftJoinAndSelect('cartItem.product', 'product_info')
       .where('cartItem.customerId = :customerId', { customerId: customerId })
       .getMany();
+  }
+
+  async updateCartItem(
+    customerId: number,
+    inputCartItemData: inputCartItemInfoDto,
+  ): Promise<SelectCartItemInfoDto[]> {
+    await this.cartItemInfoRepository
+      .createQueryBuilder()
+      .update(CartItemInfoEntity)
+      .set({
+        productCount: inputCartItemData.productCount,
+      })
+      .where('customerId = :customerId', { customerId: customerId })
+      .andWhere('productId = :productId', {
+        productId: inputCartItemData.productId,
+      })
+      .execute();
+
+    return await this.getCartItems(customerId);
+  }
+
+  async insertCartItem(
+    customerId: number,
+    inputCartItemData: inputCartItemInfoDto,
+  ): Promise<SelectCartItemInfoDto[]> {
+    await this.cartItemInfoRepository
+      .createQueryBuilder()
+      .insert()
+      .into(CartItemInfoEntity)
+      .values({
+        customerId: customerId,
+        productId: inputCartItemData.productId,
+        productCount: inputCartItemData.productCount,
+      })
+      .execute();
+
+    return await this.getCartItems(customerId);
+  }
+
+  async deleteCartItem(
+    customerId: number,
+    productId: number,
+  ): Promise<SelectCartItemInfoDto[]> {
+    await this.cartItemInfoRepository
+      .createQueryBuilder()
+      .delete()
+      .from(CartItemInfoEntity)
+      .where('customerId = :customerId', { customerId: customerId })
+      .andWhere('productId = :productId', { productId: productId })
+      .execute();
+
+    return await this.getCartItems(customerId);
+  }
+
+  async clearCart(customerId: number): Promise<SelectCartItemInfoDto[]> {
+    await this.cartItemInfoRepository
+      .createQueryBuilder()
+      .delete()
+      .from(CartItemInfoEntity)
+      .where('customerId = :customerId', { customerId: customerId })
+      .execute();
+
+    return await this.getCartItems(customerId);
   }
 }

@@ -52,6 +52,10 @@ export class AuthService {
     const response = {
       id: customer.id,
       customerEmail: customer.customerEmail,
+      customerName: customer.customerName,
+      customerPhoneNumber: customer.customerPhoneNumber,
+      customerAddress: customer.customerAddress,
+      customerAddressDetail: customer.customerAddressDetail,
       customerRole: customer.customerRole,
       token: token,
     };

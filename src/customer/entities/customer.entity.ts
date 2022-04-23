@@ -20,7 +20,10 @@ class CustomerInfoEntity extends CoreEntity {
   customerPhoneNumber: string;
 
   @Column({ nullable: true })
-  custormerAddress: string;
+  customerAddress: string;
+
+  @Column({ nullable: true })
+  customerAddressDetail: string;
 
   @Column({ nullable: true })
   signupVerifyToken: string;

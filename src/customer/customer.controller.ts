@@ -17,9 +17,10 @@ import {
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import {
-  inputCartItemInfoDto,
+  InputCartItemInfoDto,
   SelectCartItemInfoDto,
 } from './dtos/cartItem-info.dto';
+import { CustomerInfoDto } from './dtos/customer-info.dto';
 @Controller('customer')
 export class CustomerController {
   constructor(
@@ -46,6 +47,13 @@ export class CustomerController {
     return await this.authService.jwtLogIn(loginRequestDto);
   }
 
+  @Get('/:customerId')
+  async getCustomerByCustomerId(
+    @Param('customerId') customerId: number,
+  ): Promise<CustomerInfoDto> {
+    return await this.customerService.getCustomerByCustomerId(customerId);
+  }
+
   @Get('/:customerId/cart')
   async getCartItems(
     @Param('customerId') customerId,
@@ -56,7 +64,7 @@ export class CustomerController {
   @Put('/:customerId/cart')
   async updateCartItem(
     @Param('customerId') customerId,
-    @Body() inputCartItemData: inputCartItemInfoDto,
+    @Body() inputCartItemData: InputCartItemInfoDto,
   ): Promise<SelectCartItemInfoDto[]> {
     return await this.customerService.updateCartItem(
       customerId,
@@ -67,7 +75,7 @@ export class CustomerController {
   @Post('/:customerId/cart')
   async insertCartItem(
     @Param('customerId') customerId,
-    @Body() inputCartItemData: inputCartItemInfoDto,
+    @Body() inputCartItemData: InputCartItemInfoDto,
   ): Promise<SelectCartItemInfoDto[]> {
     return await this.customerService.insertCartItem(
       customerId,

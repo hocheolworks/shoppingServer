@@ -40,6 +40,9 @@ envs
 #api test
 .http
 
+# static folder
+/public
+
 
 #
 .eslintrc.js

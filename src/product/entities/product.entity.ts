@@ -19,6 +19,9 @@ class ProductInfoEntity extends CoreEntity {
   @Column({ type: 'int', comment: '최소 수량' })
   productMinimumEA: number;
 
+  @Column({ type: 'varchar', length: '128', comment: '상품 이미지 파일경로' })
+  productImageFilepath: string;
+
   @OneToMany(() => ReviewInfoEntity, (review) => review.product)
   reviews: ReviewInfoEntity[];
 

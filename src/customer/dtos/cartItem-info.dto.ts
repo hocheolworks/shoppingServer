@@ -72,7 +72,7 @@ export class SelectCartItemInfoDto {
   deletedAt: Date;
 }
 
-export class inputCartItemInfoDto {
+export class InputCartItemInfoDto {
   @ApiProperty({
     description: '상품 id',
     example: 2,

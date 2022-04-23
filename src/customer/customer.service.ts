@@ -19,9 +19,10 @@ import * as uuid from 'uuid';
 import * as jwt from 'jsonwebtoken';
 import CartItemInfoEntity from './entities/cartItem.entity';
 import {
-  inputCartItemInfoDto,
+  InputCartItemInfoDto,
   SelectCartItemInfoDto,
 } from './dtos/cartItem-info.dto';
+import { CustomerInfoDto } from './dtos/customer-info.dto';
 
 @Injectable()
 export class CustomerService {
@@ -169,6 +170,13 @@ export class CustomerService {
     );
   }
 
+  async getCustomerByCustomerId(customerId: number): Promise<CustomerInfoDto> {
+    return await this.customerInfoRepository
+      .createQueryBuilder('customer')
+      .where('customer.id = :customerId', { customerId: customerId })
+      .getOne();
+  }
+
   async getCartItems(customerId: number): Promise<SelectCartItemInfoDto[]> {
     if (customerId === undefined || isNaN(customerId)) return null;
 
@@ -182,7 +190,7 @@ export class CustomerService {
 
   async updateCartItem(
     customerId: number,
-    inputCartItemData: inputCartItemInfoDto,
+    inputCartItemData: InputCartItemInfoDto,
   ): Promise<SelectCartItemInfoDto[]> {
     await this.cartItemInfoRepository
       .createQueryBuilder()
@@ -201,7 +209,7 @@ export class CustomerService {
 
   async insertCartItem(
     customerId: number,
-    inputCartItemData: inputCartItemInfoDto,
+    inputCartItemData: InputCartItemInfoDto,
   ): Promise<SelectCartItemInfoDto[]> {
     await this.cartItemInfoRepository
       .createQueryBuilder()

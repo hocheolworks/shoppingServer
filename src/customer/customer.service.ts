@@ -170,6 +170,16 @@ export class CustomerService {
     );
   }
 
+  async checkAdmin(customerId: number): Promise<Boolean> {
+    const { customerRole } = await this.customerInfoRepository
+      .createQueryBuilder('customer')
+      .select('customerRole')
+      .where('customer.id = :customerId', { customerId: customerId })
+      .getRawOne();
+
+    return customerRole === 'ADMIN';
+  }
+
   async getCustomerByCustomerId(customerId: number): Promise<CustomerInfoDto> {
     return await this.customerInfoRepository
       .createQueryBuilder('customer')

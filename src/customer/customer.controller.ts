@@ -52,7 +52,6 @@ export class CustomerController {
   async kakaoLogin(@Query() code: string) {
     console.log('kakaologin was called');
     const result = await this.authService.kakaoLogin(code);
-    console.log(result.subscribe());
     return result;
   }
 

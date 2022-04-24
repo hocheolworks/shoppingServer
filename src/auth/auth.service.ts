@@ -54,6 +54,7 @@ export class AuthService {
       customerEmail: customer.customerEmail,
       customerName: customer.customerName,
       customerPhoneNumber: customer.customerPhoneNumber,
+      customerPostIndex: customer.customerPostIndex,
       customerAddress: customer.customerAddress,
       customerAddressDetail: customer.customerAddressDetail,
       customerRole: customer.customerRole,

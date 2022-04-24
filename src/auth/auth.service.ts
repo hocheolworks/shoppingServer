@@ -1,5 +1,3 @@
-import { response } from 'express';
-import { KakaoLogInDto } from './dtos/kakaologin.dto';
 import { LoginRequestDto } from './dtos/login.request.dto';
 import { Repository } from 'typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
@@ -7,7 +5,7 @@ import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AxiosResponse } from 'axios';
+
 import axios from 'axios';
 
 @Injectable()

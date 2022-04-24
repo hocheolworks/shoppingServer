@@ -101,4 +101,12 @@ export class OrderService {
 
     return result;
   }
+
+  async getOrderItemInfo(orderId: number) {
+    return this.orderItemInfoRepository.find({ orderId: orderId });
+  }
+
+  async getOrderList() {
+    return this.orderInfoRepository.find();
+  }
 }

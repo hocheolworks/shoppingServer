@@ -15,6 +15,7 @@ import CartItemInfoEntity from './customer/entities/cartItem.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
+import { AdminModule } from './admin/admin.module';
 
 /**
  * ENV 설정
@@ -56,6 +57,8 @@ const envFilePath = 'envs/.env.dev';
     }),
 
     AccountModule,
+
+    AdminModule,
   ],
 })
 export class AppModule {}

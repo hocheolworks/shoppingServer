@@ -250,4 +250,15 @@ export class CustomerService {
 
     return await this.getCartItems(customerId);
   }
+
+  async getCustomerList() {
+    console.log('we are here');
+    const customerList = await this.customerInfoRepository.find();
+    console.log('this is list', customerList);
+    return customerList;
+  }
+
+  async getCustomerInfoById(customerId: number): Promise<CustomerInfoEntity> {
+    return await this.customerInfoRepository.findOne({ id: customerId });
+  }
 }

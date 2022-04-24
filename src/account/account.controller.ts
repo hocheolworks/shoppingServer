@@ -7,15 +7,12 @@ import { UpdatePasswordDto } from './dtos/update-password.dto';
 
 @Controller('account')
 export class AccountController {
-  constructor(
-    private readonly accountService: AccountService
-  ){};
+  constructor(private readonly accountService: AccountService) {}
 
   @Put('/edit')
   async updateAccount(
     @Body() updateAccountInfoDto: UpdateAccountInfoDto,
   ): Promise<CustomerInfoEntity> {
-
     // console.log(updateAccountInfoDto);
     return this.accountService.updateCustomerInfo(updateAccountInfoDto);
   }

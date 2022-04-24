@@ -3,6 +3,9 @@ import ProductInfoEntity from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SelectProductInfoDto } from './dtos/product-info.dto';
+import { InputProductInfoDtd } from './dtos/input-product-info.dto';
+import { InsertProductError } from './dtos/insert-product-error.dto';
+import { stringify } from 'querystring';
 
 @Injectable()
 export class ProductService {
@@ -18,8 +21,8 @@ export class ProductService {
       .getMany();
   }
 
-  getProductById(id: number): Promise<SelectProductInfoDto> {
-    return this.productInfoRepository
+  async getProductById(id: number): Promise<SelectProductInfoDto> {
+    return await this.productInfoRepository
       .createQueryBuilder('product')
       .where('product.id = :id', { id: id })
       .leftJoinAndSelect('product.reviews', 'review_info')
@@ -27,11 +30,33 @@ export class ProductService {
       .getOne();
   }
 
-  getProductsByIdList(data: Array<number>): Promise<SelectProductInfoDto[]> {
-    console.log(data);
-    return this.productInfoRepository
-      .createQueryBuilder('product')
-      .whereInIds(data)
-      .getMany();
+  async insertProduct(
+    body: InputProductInfoDtd,
+  ): Promise<SelectProductInfoDto | InsertProductError> {
+    // InputProductinfoDto Check
+
+    try {
+      const insertedId = await this.productInfoRepository
+        .createQueryBuilder('product')
+        .insert()
+        .into(ProductInfoEntity)
+        .values({
+          productName: body.productName,
+          productMinimumEA: body.productMinimumEA,
+          productPrice: body.productPrice,
+          productDescription: body.productDescription,
+          productImageFilepath: body.productImageFilepath,
+        })
+        .returning('id')
+        .execute();
+
+      return await this.productInfoRepository
+        .createQueryBuilder('product')
+        .where('id = :id', { id: insertedId })
+        .getOne();
+    } catch (err: any) {
+      console.log(err);
+      return null;
+    }
   }
 }

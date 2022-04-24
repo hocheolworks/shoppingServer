@@ -12,12 +12,13 @@ import ProductInfoEntity from './product/entities/product.entity';
 import OrderInfoEntity from './order/entities/order.entity';
 import OrderItemInfoEntity from './order/entities/orderItem.entity';
 import CartItemInfoEntity from './customer/entities/cartItem.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 /**
  * ENV 설정
  */
 const envFilePath = 'envs/.env.dev';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,13 +41,17 @@ const envFilePath = 'envs/.env.dev';
       ],
       synchronize: true,
       autoLoadEntities: true,
-      logging: true,
     }),
     CustomerModule,
     EmailModule,
     ProductModule,
     OrderModule,
     AuthModule,
+
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public/',
+    }),
   ],
 })
 export class AppModule {}

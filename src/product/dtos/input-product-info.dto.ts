@@ -7,19 +7,10 @@ import {
   IsString,
 } from 'class-validator';
 
-export class SelectProductInfoDto {
-  @ApiProperty({
-    description: '상품 번호',
-    example: 1,
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  id: number;
-
+export class InputProductInfoDtd {
   @ApiProperty({
     description: '상품 최소 주문 수량',
-    example: 10,
+    example: '10',
     required: true,
   })
   @IsNotEmpty()
@@ -46,7 +37,7 @@ export class SelectProductInfoDto {
 
   @ApiProperty({
     description: '상품 가격',
-    example: 3000,
+    example: '3000',
     required: true,
   })
   @IsNotEmpty()
@@ -55,37 +46,10 @@ export class SelectProductInfoDto {
 
   @ApiProperty({
     description: '상품 이미지 파일 경로',
-    example: '/public/images/product/장바구니.jpeg',
+    example: 'public/images/product/조끼.jpeg',
     required: true,
   })
   @IsNotEmpty()
   @IsNumber()
   productImageFilepath: string;
-
-  @ApiProperty({
-    description: '생성날짜',
-    example: '2022-03-29 11:49:02.286',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsDate()
-  createdAt: Date;
-
-  @ApiProperty({
-    description: '수정날짜',
-    example: '2022-03-29 11:49:02.286',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsDate()
-  updatedAt: Date;
-
-  @ApiProperty({
-    description: '삭제날짜',
-    example: '2022-03-29 11:49:02.286',
-    required: false,
-  })
-  @IsNotEmpty()
-  @IsDate()
-  deletedAt: Date;
 }

@@ -14,6 +14,7 @@ import OrderItemInfoEntity from './order/entities/orderItem.entity';
 import CartItemInfoEntity from './customer/entities/cartItem.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AccountModule } from './account/account.module';
 
 /**
  * ENV 설정
@@ -47,11 +48,14 @@ const envFilePath = 'envs/.env.dev';
     ProductModule,
     OrderModule,
     AuthModule,
-
+    AccountModule,
+    
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public/',
     }),
+
+    AccountModule,
   ],
 })
 export class AppModule {}

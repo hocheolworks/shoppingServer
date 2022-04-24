@@ -170,7 +170,7 @@ export class CustomerService {
     );
   }
 
-  async checkAdmin(customerId: number): Promise<Boolean> {
+  async checkAdmin(customerId: number): Promise<boolean> {
     const { customerRole } = await this.customerInfoRepository
       .createQueryBuilder('customer')
       .select('customerRole')

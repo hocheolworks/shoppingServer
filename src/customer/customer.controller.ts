@@ -1,9 +1,7 @@
-import { KakaoLogInDto } from './../auth/dtos/kakaologin.dto';
+import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import { LoginRequestDto } from './../auth/dtos/login.request.dto';
 import { AuthService } from './../auth/auth.service';
-import { CustomerLogInDto } from './dtos/customer-login.dto';
 /* eslint-disable prettier/prettier */
-import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { NewCustomerInfo } from './customer.interface';
 import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
 import {
@@ -28,6 +26,18 @@ export class CustomerController {
     private readonly customerService: CustomerService,
     private readonly authService: AuthService,
   ) {}
+
+  @Get('/all')
+  async getCustomerList(): Promise<CustomerInfoEntity[]> {
+    return await this.customerService.getCustomerList();
+  }
+
+  @Get('/:customerId')
+  async getCustomerInfoById(
+    @Param('customerId') customerId: number,
+  ): Promise<CustomerInfoEntity> {
+    return await this.customerService.getCustomerInfoById(customerId);
+  }
 
   @Post()
   async createAccount(

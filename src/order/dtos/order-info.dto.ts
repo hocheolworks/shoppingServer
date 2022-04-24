@@ -107,21 +107,21 @@ export class InsertOrderInfoDto extends SelectOrderInfoDto {
     example: [],
     required: false,
   })
-  orderItems:Array<string>;
+  orderItems: Array<string>;
 
   @ApiProperty({
-      description: '주문 상품 목록',
-      example: {"1": 2, "5":1},
-      required: true,
+    description: '주문 상품 목록',
+    example: { '1': 2, '5': 1 },
+    required: true,
   })
-  productsId:Map<string, number>;
+  productsId: Map<string, number>;
 
   @ApiProperty({
     description: '고객 id',
     example: 1,
     required: true,
   })
-  customerId:number;
+  customerId: number;
 
   @ApiProperty({
     description: '배송 메오',
@@ -129,5 +129,5 @@ export class InsertOrderInfoDto extends SelectOrderInfoDto {
     required: false,
   })
   @IsString()
-  orderMemo:string | null;
+  orderMemo: string | null;
 }

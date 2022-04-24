@@ -107,6 +107,10 @@ export class OrderService {
   }
 
   async getOrderList() {
-    return this.orderInfoRepository.find();
+    return await this.orderInfoRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem_info')
+      .leftJoinAndSelect('orderItem_info.product', 'product_info')
+      .getMany();
   }
 }

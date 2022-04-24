@@ -13,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { map, tap } from 'rxjs/operators';
 import axios from 'axios';
@@ -60,24 +60,31 @@ export class AuthService {
     return response;
   }
 
-  async kakaoLogin(code: string): Promise<Observable<AxiosResponse<any, any>>> {
-    const body = {
+  async kakaoLogin(code: any): Promise<AxiosResponse<any, any>> {
+    const getAccessTokenBody = {
       headers: {
         'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
       },
     };
+    const codeFromObject = code['code '];
+    const getAccessTokenUrl = `https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=${process.env.REST_API_KEY}&redirect_uri=${process.env.REDIRECT_URL}&code=${codeFromObject}`;
 
-    const result = this.httpService
-      .post(
-        `https://kauth.kakao.com/oauth/token/?grant_type=authorization_code&client_id=${process.env.REST_API_KEY}&redirect_uri=${process.env.REDIRECT_URL}&code=${code}`,
-      )
-      .pipe(
-        map((resp) => resp.data),
-        tap((data) => console.log(data)),
-      );
-    console.log(result.subscribe);
+    const accessTokenRequest = this.httpService.post(
+      getAccessTokenUrl,
+      getAccessTokenBody,
+    );
 
-    return result;
+    const getAccessTokenResult = await (
+      await lastValueFrom(accessTokenRequest)
+    ).data;
+
+    const accessToken = getAccessTokenResult.access_token;
+    const tokenType = getAccessTokenResult.token_type;
+    console.log(tokenType, accessToken);
+
+    const getCustomerInfoUrl = `https://kapi.kakao.com/v2/user/me`;
+
+    return accessToken;
   }
 }
 

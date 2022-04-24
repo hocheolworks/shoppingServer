@@ -1,3 +1,4 @@
+import { KakaoLogInDto } from './../auth/dtos/kakaologin.dto';
 import { LoginRequestDto } from './../auth/dtos/login.request.dto';
 import { AuthService } from './../auth/auth.service';
 import { CustomerLogInDto } from './dtos/customer-login.dto';
@@ -45,6 +46,14 @@ export class CustomerController {
   @Post('/login')
   async login(@Body() loginRequestDto: LoginRequestDto) {
     return await this.authService.jwtLogIn(loginRequestDto);
+  }
+
+  @Get('/kakao/login')
+  async kakaoLogin(@Query() code: string) {
+    console.log('kakaologin was called');
+    const result = await this.authService.kakaoLogin(code);
+    console.log(result.subscribe());
+    return result;
   }
 
   @Get('/:customerId')

@@ -1,6 +1,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerModule } from './../customer/customer.module';
 import { forwardRef, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt/jwt.strategey';
@@ -15,7 +16,7 @@ import CustomerInfoEntity from 'src/customer/entities/customer.entity';
       secret: 'secret',
       signOptions: { expiresIn: '1y' },
     }),
-
+    HttpModule,
     forwardRef(() => CustomerModule),
   ],
   providers: [AuthService, JwtStrategy],

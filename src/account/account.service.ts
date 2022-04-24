@@ -18,6 +18,7 @@ export class AccountService {
     const customer = await this.customerInfoRepository.findOne(updateAccountInfoDto.id);
    
     customer.customerName = updateAccountInfoDto.customerName;
+    customer.customerPostIndex = updateAccountInfoDto.customerPostIndex;
     customer.customerAddress = updateAccountInfoDto.customerAddress;
     customer.customerAddressDetail = updateAccountInfoDto.customerAddressDetail;
     customer.customerPhoneNumber = updateAccountInfoDto.customerPhoneNumber;

@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import ProductInfoEntity from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SelectProductInfoDto } from './dtos/product-info.dto';
 import { InputProductInfoDtd } from './dtos/input-product-info.dto';
-import { InsertProductError } from './dtos/insert-product-error.dto';
+import { InsertProductError } from './dtos/product-error.dto';
 import { stringify } from 'querystring';
 
 @Injectable()
@@ -32,11 +36,56 @@ export class ProductService {
 
   async insertProduct(
     body: InputProductInfoDtd,
-  ): Promise<SelectProductInfoDto | InsertProductError> {
-    // InputProductinfoDto Check
+  ): Promise<SelectProductInfoDto[]> {
+    if (
+      !Boolean(body.productName) ||
+      !Boolean(body.productDescription) ||
+      !Boolean(body.productMinimumEA) ||
+      !Boolean(body.productPrice) ||
+      body.productMinimumEA < 1 ||
+      body.productPrice < 0 ||
+      !Boolean(body.productImageFilepath)
+    ) {
+      const productError: InsertProductError = {
+        productNameError: '',
+        productDescriptionError: '',
+        productMinimumEAError: '',
+        productPriceError: '',
+        productImageFilepathError: '',
+        customerRoleError: '',
+      };
 
+      if (!Boolean(body.productName)) {
+        productError.productNameError = '상품명은 필수 입니다.';
+      }
+
+      if (!Boolean(body.productDescription)) {
+        productError.productDescriptionError = '상품 설명은 필수 입니다.';
+      }
+
+      if (!Boolean(body.productMinimumEA)) {
+        productError.productMinimumEAError = '최소 주문 수량은 필수 입니다.';
+      } else if (body.productMinimumEA < 1) {
+        productError.productMinimumEAError =
+          '최소 주문 수량은 0보다 큰 숫자여야 합니다.';
+      }
+
+      if (!Boolean(body.productPrice)) {
+        productError.productPriceError = '상품 가격은 필수 입니다.';
+      } else if (body.productPrice < 0) {
+        productError.productPriceError = '상품 가격은 0보다 작을 수 없습니다.';
+      }
+
+      if (!Boolean(body.productImageFilepath)) {
+        productError.productImageFilepathError = '상품 이미지는 필수 입니다.';
+      }
+
+      throw new BadRequestException({
+        error: productError,
+      });
+    }
     try {
-      const insertedId = await this.productInfoRepository
+      await this.productInfoRepository
         .createQueryBuilder('product')
         .insert()
         .into(ProductInfoEntity)
@@ -47,16 +96,32 @@ export class ProductService {
           productDescription: body.productDescription,
           productImageFilepath: body.productImageFilepath,
         })
-        .returning('id')
         .execute();
 
       return await this.productInfoRepository
         .createQueryBuilder('product')
-        .where('id = :id', { id: insertedId })
-        .getOne();
+        .getMany();
     } catch (err: any) {
       console.log(err);
       return null;
+    }
+  }
+
+  async deleteProduct(productId: number): Promise<SelectProductInfoDto[]> {
+    try {
+      await this.productInfoRepository
+        .createQueryBuilder('product')
+        .delete()
+        .from(ProductInfoEntity)
+        .where('id = :productId', { productId: productId })
+        .execute();
+
+      return await this.productInfoRepository
+        .createQueryBuilder('product')
+        .getMany();
+    } catch (err: any) {
+      console.log(err);
+      throw new InternalServerErrorException();
     }
   }
 }

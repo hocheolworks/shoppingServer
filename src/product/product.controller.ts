@@ -1,24 +1,34 @@
 import {
   Body,
   Controller,
+  Delete,
+  ForbiddenException,
   Get,
+  HttpException,
   Param,
   Post,
+  Query,
+  Res,
+  UnauthorizedException,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { fileURLToPath } from 'url';
 import { InputProductInfoDtd } from './dtos/input-product-info.dto';
-import { InsertProductError } from './dtos/insert-product-error.dto';
+import { InsertProductError } from './dtos/product-error.dto';
 import { SelectProductInfoDto } from './dtos/product-info.dto';
 import { ProductService } from './product.service';
 import * as path from 'path';
+import { CustomerService } from 'src/customer/customer.service';
+import { response } from 'express';
 
 @Controller('product')
 export class ProductController {
-  constructor(readonly productService: ProductService) {}
+  constructor(
+    readonly productService: ProductService,
+    readonly customerService: CustomerService,
+  ) {}
 
   @Get('/all')
   async getAllProducts(): Promise<SelectProductInfoDto[]> {
@@ -30,7 +40,7 @@ export class ProductController {
     return await this.productService.getProductById(id);
   }
 
-  @Post('new')
+  @Post('/new')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -46,7 +56,7 @@ export class ProductController {
   async insertProduct(
     @UploadedFile() file: Express.Multer.File,
     @Body() product,
-  ): Promise<SelectProductInfoDto | InsertProductError> {
+  ): Promise<SelectProductInfoDto[]> {
     const inputProductDto = new InputProductInfoDtd();
     inputProductDto.productName = product.productName;
     inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
@@ -54,6 +64,32 @@ export class ProductController {
     inputProductDto.productPrice = parseInt(product.productPrice);
     inputProductDto.productImageFilepath = file.path;
 
-    return await this.productService.insertProduct(inputProductDto);
+    if (!this.customerService.checkAdmin(parseInt(product.customerId))) {
+      // 관리자 계정이 아닐 경우
+      const error: InsertProductError = new InsertProductError();
+      error.customerRoleError = '관리자 계정이 아닙니다.';
+      throw new ForbiddenException({
+        error: error,
+      });
+    } else {
+      // 관리자 계정일 경우
+      return await this.productService.insertProduct(inputProductDto);
+    }
+  }
+
+  @Delete('/:productId')
+  async deleteProduct(
+    @Param('productId') productId: number,
+    @Query('customerId') customerId: number,
+  ): Promise<SelectProductInfoDto[]> {
+    if (!this.customerService.checkAdmin(customerId)) {
+      const error: InsertProductError = new InsertProductError();
+      error.customerRoleError = '관리자 계정이 아닙니다.';
+      throw new ForbiddenException({
+        error: error,
+      });
+    }
+
+    return await this.productService.deleteProduct(productId);
   }
 }

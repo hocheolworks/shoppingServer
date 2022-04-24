@@ -20,6 +20,9 @@ class CustomerInfoEntity extends CoreEntity {
   customerPhoneNumber: string;
 
   @Column({ nullable: true })
+  customerPostIndex: string;
+
+  @Column({ nullable: true })
   customerAddress: string;
 
   @Column({ nullable: true })

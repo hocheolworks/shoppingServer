@@ -1,21 +1,26 @@
 import {
   BadRequestException,
+  ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import ProductInfoEntity from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { SelectProductInfoDto } from './dtos/product-info.dto';
 import { InputProductInfoDtd } from './dtos/input-product-info.dto';
 import { InsertProductError } from './dtos/product-error.dto';
-import { stringify } from 'querystring';
+import * as fs from 'fs';
+import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
+    @InjectRepository(CustomerInfoEntity)
+    private readonly customerInfoRepository: Repository<CustomerInfoEntity>,
   ) {}
 
   async getAllProducts(): Promise<SelectProductInfoDto[]> {
@@ -109,16 +114,26 @@ export class ProductService {
 
   async deleteProduct(productId: number): Promise<SelectProductInfoDto[]> {
     try {
+      const { product_productImageFilepath } = await this.productInfoRepository
+        .createQueryBuilder()
+        .select('product.productImageFilepath')
+        .from(ProductInfoEntity, 'product')
+        .where('product.id = :productId', { productId: productId })
+        .getRawOne();
+
+      fs.rm(product_productImageFilepath, () => {
+        console.log(`Successfully remove ${product_productImageFilepath}`);
+      });
+
       await this.productInfoRepository
         .createQueryBuilder('product')
         .delete()
         .from(ProductInfoEntity)
         .where('id = :productId', { productId: productId })
+        .returning('productImageFilepath')
         .execute();
 
-      return await this.productInfoRepository
-        .createQueryBuilder('product')
-        .getMany();
+      return await this.productInfoRepository.createQueryBuilder('').getMany();
     } catch (err: any) {
       console.log(err);
       throw new InternalServerErrorException();

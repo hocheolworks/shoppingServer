@@ -65,16 +65,14 @@ export class ProductController {
     inputProductDto.productImageFilepath = file.path;
 
     if (!this.customerService.checkAdmin(parseInt(product.customerId))) {
-      // 관리자 계정이 아닐 경우
       const error: InsertProductError = new InsertProductError();
       error.customerRoleError = '관리자 계정이 아닙니다.';
       throw new ForbiddenException({
         error: error,
       });
-    } else {
-      // 관리자 계정일 경우
-      return await this.productService.insertProduct(inputProductDto);
     }
+
+    return await this.productService.insertProduct(inputProductDto);
   }
 
   @Delete('/:productId')
@@ -82,11 +80,12 @@ export class ProductController {
     @Param('productId') productId: number,
     @Query('customerId') customerId: number,
   ): Promise<SelectProductInfoDto[]> {
-    if (!this.customerService.checkAdmin(customerId)) {
+    const isAdmin: Boolean = await this.customerService.checkAdmin(customerId);
+    if (!isAdmin) {
       const error: InsertProductError = new InsertProductError();
       error.customerRoleError = '관리자 계정이 아닙니다.';
       throw new ForbiddenException({
-        error: error,
+        productError: error,
       });
     }
 

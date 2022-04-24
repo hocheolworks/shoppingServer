@@ -171,7 +171,7 @@ export class CustomerService {
   }
 
   async checkAdmin(customerId: number): Promise<Boolean> {
-    const customerRole: string = await this.customerInfoRepository
+    const { customerRole } = await this.customerInfoRepository
       .createQueryBuilder('customer')
       .select('customerRole')
       .where('customer.id = :customerId', { customerId: customerId })

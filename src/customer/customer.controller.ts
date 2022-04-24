@@ -1,3 +1,4 @@
+import { KakaoLogInDto } from './../auth/dtos/kakaologin.dto';
 import { LoginRequestDto } from './../auth/dtos/login.request.dto';
 import { AuthService } from './../auth/auth.service';
 import { CustomerLogInDto } from './dtos/customer-login.dto';
@@ -5,7 +6,7 @@ import { CustomerLogInDto } from './dtos/customer-login.dto';
 import { VerifyEmailDto } from './dtos/verify-email.dto';
 import { NewCustomerInfo } from './customer.interface';
 import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 @Controller('customer')
 export class CustomerController {
@@ -31,5 +32,13 @@ export class CustomerController {
   @Post('/login')
   async login(@Body() loginRequestDto: LoginRequestDto) {
     return await this.authService.jwtLogIn(loginRequestDto);
+  }
+
+  @Get('/kakao/login')
+  async kakaoLogin(@Query() code: string) {
+    console.log('kakaologin was called');
+    const result = await this.authService.kakaoLogin(code);
+    console.log(result.subscribe());
+    return result;
   }
 }

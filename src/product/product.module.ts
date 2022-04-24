@@ -10,11 +10,7 @@ import { CustomerModule } from 'src/customer/customer.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      ProductInfoEntity,
-      ReviewInfoEntity,
-      CustomerInfoEntity,
-    ]),
+    TypeOrmModule.forFeature([ProductInfoEntity, ReviewInfoEntity]),
     CustomerModule,
   ],
   controllers: [ProductController],

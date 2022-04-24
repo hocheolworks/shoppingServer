@@ -19,8 +19,6 @@ export class ProductService {
   constructor(
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
-    @InjectRepository(CustomerInfoEntity)
-    private readonly customerInfoRepository: Repository<CustomerInfoEntity>,
   ) {}
 
   async getAllProducts(): Promise<SelectProductInfoDto[]> {
@@ -130,13 +128,70 @@ export class ProductService {
         .delete()
         .from(ProductInfoEntity)
         .where('id = :productId', { productId: productId })
-        .returning('productImageFilepath')
         .execute();
 
-      return await this.productInfoRepository.createQueryBuilder('').getMany();
+      return await this.productInfoRepository
+        .createQueryBuilder('product')
+        .getMany();
     } catch (err: any) {
       console.log(err);
       throw new InternalServerErrorException();
     }
+  }
+
+  async updateProductWithImage(
+    productId: number,
+    product: InputProductInfoDtd,
+  ): Promise<SelectProductInfoDto> {
+    const { product_productImageFilepath } = await this.productInfoRepository
+      .createQueryBuilder()
+      .select('product.productImageFilepath')
+      .from(ProductInfoEntity, 'product')
+      .where('product.id = :productId', { productId: productId })
+      .getRawOne();
+
+    fs.rm(product_productImageFilepath, () => {
+      console.log(`Successfully remove ${product_productImageFilepath}`);
+    });
+
+    await this.productInfoRepository
+      .createQueryBuilder('product')
+      .update(ProductInfoEntity)
+      .set({
+        productName: product.productName,
+        productDescription: product.productDescription,
+        productImageFilepath: product.productImageFilepath,
+        productMinimumEA: product.productMinimumEA,
+        productPrice: product.productPrice,
+      })
+      .where('id = :productId', { productId: productId })
+      .execute();
+
+    return await this.productInfoRepository
+      .createQueryBuilder('product')
+      .where('product.id = :productId', { productId: productId })
+      .getOne();
+  }
+
+  async updateProductWithoutImage(
+    productId: number,
+    product: InputProductInfoDtd,
+  ): Promise<SelectProductInfoDto> {
+    await this.productInfoRepository
+      .createQueryBuilder('product')
+      .update(ProductInfoEntity)
+      .set({
+        productName: product.productName,
+        productDescription: product.productDescription,
+        productMinimumEA: product.productMinimumEA,
+        productPrice: product.productPrice,
+      })
+      .where('id = :productId', { productId: productId })
+      .execute();
+
+    return await this.productInfoRepository
+      .createQueryBuilder('product')
+      .where('product.id = :productId', { productId: productId })
+      .getOne();
   }
 }

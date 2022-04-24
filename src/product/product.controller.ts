@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +8,7 @@ import {
   HttpException,
   Param,
   Post,
+  Put,
   Query,
   Res,
   UnauthorizedException,
@@ -64,6 +66,12 @@ export class ProductController {
     inputProductDto.productPrice = parseInt(product.productPrice);
     inputProductDto.productImageFilepath = file.path;
 
+    if (isNaN(product.customerId)) {
+      throw new BadRequestException({
+        error: 'customerId is NaN',
+      });
+    }
+
     if (!this.customerService.checkAdmin(parseInt(product.customerId))) {
       const error: InsertProductError = new InsertProductError();
       error.customerRoleError = '관리자 계정이 아닙니다.';
@@ -90,5 +98,78 @@ export class ProductController {
     }
 
     return await this.productService.deleteProduct(productId);
+  }
+
+  @Put('/:productId/w/image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public/images/product',
+        filename: (req, file, callback) => {
+          const extension = path.extname(file.originalname);
+          const basename = path.basename(file.originalname, extension);
+          callback(null, `${basename}-${Date.now()}${extension}`);
+        },
+      }),
+    }),
+  )
+  async updateProductWithImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('productId') productId: number,
+    @Query('customerId') customerId: number,
+    @Body() product,
+  ): Promise<SelectProductInfoDto> {
+    const isAdmin: Boolean = await this.customerService.checkAdmin(customerId);
+    if (!isAdmin) {
+      const error: InsertProductError = new InsertProductError();
+      error.customerRoleError = '관리자 계정이 아닙니다.';
+      throw new ForbiddenException({
+        productError: error,
+      });
+    }
+
+    const inputProductDto = new InputProductInfoDtd();
+    inputProductDto.productName = product.productName;
+    inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
+    inputProductDto.productDescription = product.productDescription;
+    inputProductDto.productPrice = parseInt(product.productPrice);
+    inputProductDto.productImageFilepath = file.path;
+
+    return this.productService.updateProductWithImage(
+      productId,
+      inputProductDto,
+    );
+  }
+
+  @Put('/:productId/w/o/image')
+  async updateProductWithoutImage(
+    @Param('productId') productId: number,
+    @Query('customerId') customerId: number,
+    @Body() product,
+  ): Promise<SelectProductInfoDto> {
+    const isAdmin: Boolean = await this.customerService.checkAdmin(customerId);
+    if (!isAdmin) {
+      const error: InsertProductError = new InsertProductError();
+      error.customerRoleError = '관리자 계정이 아닙니다.';
+      throw new ForbiddenException({
+        productError: error,
+      });
+    }
+
+    const inputProductDto = new InputProductInfoDtd();
+    inputProductDto.productName = product.productName;
+    inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
+    inputProductDto.productDescription = product.productDescription;
+    inputProductDto.productPrice = parseInt(product.productPrice);
+
+    console.log(product.productName);
+    console.log(parseInt(product.productMinimumEA));
+    console.log(product.productDescription);
+    console.log(parseInt(product.productPrice));
+
+    return this.productService.updateProductWithoutImage(
+      productId,
+      inputProductDto,
+    );
   }
 }

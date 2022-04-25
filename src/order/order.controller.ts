@@ -7,7 +7,7 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Get('all')
+  @Get('/all')
   async getOrderList() {
     return await this.orderService.getOrderList();
   }
@@ -22,9 +22,9 @@ export class OrderController {
       query.amount,
     );
   }
-  @Get('/:customer_id')
+  @Get('/:customerId')
   async getOrdersByCustomerId(
-    @Param('customer_id') customerId,
+    @Param('customerId') customerId,
   ): Promise<SelectOrderInfoDto[]> {
     return await this.orderService.getOrdersByCustomerId(customerId);
   }

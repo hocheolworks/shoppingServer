@@ -21,11 +21,27 @@ class OrderInfoEntity extends CoreEntity {
   @Column({ type: 'varchar', length: 256, comment: '상세 주소' })
   orderAddressDetail: string;
 
-  @Column({ type: 'varchar', length: 64, comment: '배송 메모(50자 이내)', default: ''})
+  @Column({
+    type: 'varchar',
+    length: 64,
+    comment: '배송 메모(50자 이내)',
+    default: '',
+  })
   orderMemo: string;
 
   @Column({ type: 'int', comment: '주문 총 가격' })
   orderTotalPrice: number;
+
+  @Column({
+    type: 'varchar',
+    length: 32,
+    comment: '주문 상태',
+    default: '결제대기',
+  })
+  orderStatus: string;
+
+  @Column({ type: 'boolean', comment: '결제 여부', default: false })
+  orderIsPaid: boolean;
 
   @Column()
   customerId: number;

@@ -6,6 +6,7 @@ import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
 import OrderItemInfoEntity from './entities/orderItem.entity';
 import http from 'https';
+import CartItemInfoEntity from 'src/customer/entities/cartItem.entity';
 
 @Injectable()
 export class OrderService {
@@ -18,6 +19,9 @@ export class OrderService {
 
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
+
+    @InjectRepository(CartItemInfoEntity)
+    private readonly cartItemInfoRepository: Repository<CartItemInfoEntity>,
   ) {}
 
   async getOrdersByCustomerId(
@@ -83,17 +87,15 @@ export class OrderService {
     const result = await this.orderInfoRepository.save(newOrderInfo);
 
     const keyArray = Object.keys(insertOrderInfoDto.productsId);
-    let val = 0;
     let key = 0;
     for (let i = 0; i < keyArray.length; i++) {
       key = parseInt(keyArray[i]);
-      const product = await this.productInfoRepository.findOne({ id: key });
-
-      val = insertOrderInfoDto.productsId[key];
+      const cartItem = await this.cartItemInfoRepository.findOne({id: key})
+      const product = await this.productInfoRepository.findOne({ id: cartItem.productId });
 
       this.orderItemInfoRepository.save({
-        orderItemEA: val,
-        orderItemTotalPrice: key * val,
+        orderItemEA: cartItem.productCount,
+        orderItemTotalPrice: product.productPrice * cartItem.productCount,
         order: newOrderInfo,
         product: product,
       });

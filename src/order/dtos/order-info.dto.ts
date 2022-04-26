@@ -9,6 +9,13 @@ import {
   IsString,
 } from 'class-validator';
 
+class CartItemForInsertOrder {
+  id: number;
+  customerId: number;
+  productId: number;
+  productCount: number;
+}
+
 export class SelectOrderInfoDto {
   @ApiProperty({
     description: '주문 번호',
@@ -150,4 +157,6 @@ export class InsertOrderInfoDto extends SelectOrderInfoDto {
   })
   @IsString()
   orderMemo: string | null;
+
+  cart: Array<CartItemForInsertOrder>;
 }

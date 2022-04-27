@@ -9,6 +9,13 @@ import {
   IsString,
 } from 'class-validator';
 
+class CartItemForInsertOrder {
+  id: number;
+  customerId: number;
+  productId: number;
+  productCount: number;
+}
+
 export class SelectOrderInfoDto {
   @ApiProperty({
     description: '주문 번호',
@@ -48,7 +55,7 @@ export class SelectOrderInfoDto {
 
   @ApiProperty({
     description: '주문자 연락처',
-    example: '010-1234-1234',
+    example: '01012341234',
     required: true,
   })
   @IsNotEmpty()
@@ -72,6 +79,26 @@ export class SelectOrderInfoDto {
   @IsNotEmpty()
   @IsNumber()
   orderTotalPrice: number;
+
+  @ApiProperty({
+    description: '주문 상태',
+    example: '결제대기',
+    required: true,
+    default: '결제대기',
+  })
+  @IsNotEmpty()
+  @IsString()
+  orderStatus: string;
+
+  @ApiProperty({
+    description: '결제 여부',
+    example: true,
+    required: true,
+    default: false,
+  })
+  @IsNotEmpty()
+  @IsString()
+  orderIsPaid: boolean;
 
   @ApiProperty({
     description: '생성날짜',
@@ -130,4 +157,6 @@ export class InsertOrderInfoDto extends SelectOrderInfoDto {
   })
   @IsString()
   orderMemo: string | null;
+
+  cart: Array<CartItemForInsertOrder>;
 }

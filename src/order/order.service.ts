@@ -1,11 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import ProductInfoEntity from 'src/product/entities/product.entity';
 import { Repository } from 'typeorm';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
 import OrderItemInfoEntity from './entities/orderItem.entity';
-import http from 'https';
+import * as http from 'https';
+import { CustomerService } from 'src/customer/customer.service';
+import { TossPaymentResponse } from 'src/common/types/types';
+
+function TossPaymentRequest(options, data) {
+  return new Promise<TossPaymentResponse>((resolve, reject) => {
+    const req = http.request(options, function (res) {
+      const chunks = [];
+
+      res.on('data', function (chunk) {
+        chunks.push(chunk);
+      });
+
+      res.on('end', function () {
+        const data = JSON.parse(Buffer.concat(chunks).toString());
+
+        resolve({
+          status: res.statusCode,
+          data: data,
+        });
+        // 내가 필요한 부분
+      });
+    });
+    req.on('error', (err) => {
+      reject(err);
+    });
+    req.write(JSON.stringify(data));
+    req.end();
+  });
+}
 
 @Injectable()
 export class OrderService {
@@ -18,6 +52,8 @@ export class OrderService {
 
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
+
+    private readonly customerService: CustomerService,
   ) {}
 
   async getOrdersByCustomerId(
@@ -33,9 +69,11 @@ export class OrderService {
 
   async paymentRequest(
     paymentKey: string,
-    orderId: string,
+    tossOrderId: string,
     amount: number,
   ): Promise<any> {
+    const orderId: number = parseInt(tossOrderId.split('-')[1]);
+
     const options = {
       method: 'POST',
       hostname: 'api.tosspayments.com',
@@ -48,58 +86,72 @@ export class OrderService {
       },
     };
 
-    const req = http.request(options, function (res) {
-      const chunks = [];
+    const data = {
+      amount: amount,
+      orderId: tossOrderId,
+    };
+    try {
+      const response = await TossPaymentRequest(options, data);
 
-      res.on('data', function (chunk) {
-        chunks.push(chunk);
-      });
+      if (response.status === 200) {
+        // 결제 성공
+        await this.orderInfoRepository
+          .createQueryBuilder()
+          .update(OrderInfoEntity)
+          .set({ orderStatus: '결제완료', orderIsPaid: true })
+          .where('id = :orderId', { orderId: orderId })
+          .execute();
+      } else {
+        console.log(response.data);
+        throw new HttpException(response.data, response.status);
+      }
 
-      res.on('end', function () {
-        const body = Buffer.concat(chunks);
-        console.log(body.toString());
-      });
-    });
-
-    req.write(JSON.stringify({ amount: amount, orderId: orderId }));
-
-    return await req.end();
+      return response.data;
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
   }
   async insertOrders(
     insertOrderInfoDto: Partial<InsertOrderInfoDto>,
-  ): Promise<OrderInfoEntity> {
-    console.log(insertOrderInfoDto);
-
-    const newOrderInfo = this.orderInfoRepository.create({
-      customerId: insertOrderInfoDto.customerId,
-      orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
-      orderMemo: insertOrderInfoDto.orderMemo,
-      orderAddress: insertOrderInfoDto.orderAddress,
-      orderAddressDetail: insertOrderInfoDto.orderAddressDetail,
-      orderPostIndex: insertOrderInfoDto.orderPostIndex,
-      orderCustomerName: insertOrderInfoDto.orderCustomerName,
-      orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
-    });
-    const result = await this.orderInfoRepository.save(newOrderInfo);
-
-    const keyArray = Object.keys(insertOrderInfoDto.productsId);
-    let val = 0;
-    let key = 0;
-    for (let i = 0; i < keyArray.length; i++) {
-      key = parseInt(keyArray[i]);
-      const product = await this.productInfoRepository.findOne({ id: key });
-
-      val = insertOrderInfoDto.productsId[key];
-
-      this.orderItemInfoRepository.save({
-        orderItemEA: val,
-        orderItemTotalPrice: key * val,
-        order: newOrderInfo,
-        product: product,
+  ): Promise<SelectOrderInfoDto> {
+    try {
+      const newOrderInfo = this.orderInfoRepository.create({
+        customerId: insertOrderInfoDto.customerId,
+        orderCustomerName: insertOrderInfoDto.orderCustomerName,
+        orderPostIndex: insertOrderInfoDto.orderPostIndex,
+        orderAddress: insertOrderInfoDto.orderAddress,
+        orderAddressDetail: insertOrderInfoDto.orderAddressDetail,
+        orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
+        orderMemo: insertOrderInfoDto.orderMemo,
+        orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
       });
-    }
+      const result = await this.orderInfoRepository.save(newOrderInfo);
+      const cart = insertOrderInfoDto.cart;
 
-    return result;
+      for (let i = 0; i < cart.length; i++) {
+        const cartItem = cart[i];
+        const product = await this.productInfoRepository.findOne({
+          id: cartItem.productId,
+        });
+
+        this.orderItemInfoRepository.save({
+          orderItemEA: cartItem.productCount,
+          orderItemTotalPrice: product.productPrice * cartItem.productCount,
+          order: newOrderInfo,
+          product: product,
+        });
+      }
+
+      await this.customerService.clearCart(result.customerId);
+
+      return result;
+    } catch (err: any) {
+      throw new InternalServerErrorException(err);
+    }
+  }
+
+  async updateOrder(orderId: number): Promise<boolean> {
+    return;
   }
 
   async getOrderItemInfo(orderId: number) {

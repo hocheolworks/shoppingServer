@@ -1,5 +1,12 @@
 import OrderItemInfoEntity from 'src/order/entities/orderItem.entity';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  InternalServerErrorException,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import { OrderService } from './order.service';
 
@@ -7,7 +14,7 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Get('all')
+  @Get('/all')
   async getOrderList() {
     return await this.orderService.getOrderList();
   }
@@ -22,9 +29,9 @@ export class OrderController {
       query.amount,
     );
   }
-  @Get('/:customer_id')
+  @Get('/:customerId')
   async getOrdersByCustomerId(
-    @Param('customer_id') customerId,
+    @Param('customerId') customerId,
   ): Promise<SelectOrderInfoDto[]> {
     return await this.orderService.getOrdersByCustomerId(customerId);
   }

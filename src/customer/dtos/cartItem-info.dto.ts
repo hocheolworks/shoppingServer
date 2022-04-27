@@ -23,6 +23,7 @@ export class SelectCartItemInfoDto {
   //   customerId: number;
 
   customer: CustomerInfoEntity;
+  customerId: number;
 
   //   @ApiProperty({
   //     description: '상품 id',
@@ -34,6 +35,7 @@ export class SelectCartItemInfoDto {
   //   productId: string;
 
   product: ProductInfoEntity;
+  productId: number;
 
   @ApiProperty({
     description: '상품 개수',

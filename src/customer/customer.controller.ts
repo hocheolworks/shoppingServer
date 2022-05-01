@@ -20,6 +20,7 @@ import {
   SelectCartItemInfoDto,
 } from './dtos/cartItem-info.dto';
 import { CustomerInfoDto } from './dtos/customer-info.dto';
+import { CustomerReviewDto } from './dtos/customer-review.dto';
 @Controller('customer')
 export class CustomerController {
   constructor(
@@ -114,5 +115,15 @@ export class CustomerController {
     @Param('customerId') customerId,
   ): Promise<SelectCartItemInfoDto[]> {
     return await this.customerService.clearCart(customerId);
+  }
+
+  @Post('/customer/review/add')
+  async addReview(
+    @Body() customerReviewDto: CustomerReviewDto,
+  ): Promise<any> {
+    
+    console.log(customerReviewDto);
+    
+    return true
   }
 }

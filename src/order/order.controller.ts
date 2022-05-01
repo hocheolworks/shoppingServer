@@ -49,4 +49,12 @@ export class OrderController {
   ) {
     return this.orderService.insertOrders(insertOrderInfoDto);
   }
+
+  @Post('/is-purchase')
+  async checkPurchase(
+    @Body('productId') productId: any,
+    @Body('customerId') customerId: any,
+  ): Promise<Boolean> {
+    return this.orderService.checkCustomerOrderItem(productId, customerId);
+  }
 }

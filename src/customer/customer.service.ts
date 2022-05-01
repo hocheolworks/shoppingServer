@@ -23,6 +23,8 @@ import {
   SelectCartItemInfoDto,
 } from './dtos/cartItem-info.dto';
 import { CustomerInfoDto } from './dtos/customer-info.dto';
+import { CustomerReviewDto } from './dtos/customer-review.dto';
+import ReviewInfoEntity from 'src/product/entities/review.entity';
 
 @Injectable()
 export class CustomerService {
@@ -32,6 +34,7 @@ export class CustomerService {
     @InjectRepository(CartItemInfoEntity)
     private readonly cartItemInfoRepository: Repository<CartItemInfoEntity>,
     private readonly emailService: EmailService,
+    private readonly reviewInfoRepository: Repository<ReviewInfoEntity>,
   ) {}
 
   async emailValidation(
@@ -270,5 +273,14 @@ export class CustomerService {
 
   async getCustomerInfoById(customerId: number): Promise<CustomerInfoEntity> {
     return await this.customerInfoRepository.findOne({ id: customerId });
+  }
+
+  async insertReview(
+    customerReviewDto: CustomerReviewDto,
+  ): Promise<any> {
+    // 20220501 여기하는중@@@
+    this.reviewInfoRepository.
+
+    return true;
   }
 }

@@ -13,12 +13,18 @@ import { InputProductInfoDtd } from './dtos/input-product-info.dto';
 import { InsertProductError } from './dtos/product-error.dto';
 import * as fs from 'fs';
 import CustomerInfoEntity from 'src/customer/entities/customer.entity';
+import ReviewInfoEntity from './entities/review.entity';
+import { ProductReviewDto } from './dtos/product-review.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
+    @InjectRepository(ReviewInfoEntity)
+    private readonly reviewInfoRepository: Repository<ReviewInfoEntity>,
+    @InjectRepository(CustomerInfoEntity)
+    private readonly customerInfoRepository: Repository<CustomerInfoEntity>,
   ) {}
 
   async getAllProducts(): Promise<SelectProductInfoDto[]> {
@@ -193,5 +199,24 @@ export class ProductService {
       .createQueryBuilder('product')
       .where('product.id = :productId', { productId: productId })
       .getOne();
+  }
+
+  async insertReview (
+    productReviewDto: ProductReviewDto,
+  ): Promise<any> {
+
+    const { customerId, productId, author, message, rating } = productReviewDto;
+
+    const customer = await this.customerInfoRepository.findOne({'id':customerId});
+    const product = await this.productInfoRepository.findOne({'id': productId});
+    const result = this.reviewInfoRepository.save({
+      customer:customer, 
+      product:product, 
+      reviewMessage: message, 
+      reviewRating: rating,
+      author: author,
+    });
+
+    return product;
   }
 }

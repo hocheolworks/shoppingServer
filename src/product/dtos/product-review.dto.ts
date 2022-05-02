@@ -1,4 +1,4 @@
-export class CustomerReviewDto {
+export class ProductReviewDto {
     customerId: number | undefined;
     productId: number;
     author: string;

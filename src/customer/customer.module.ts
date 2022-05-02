@@ -8,6 +8,7 @@ import { CustomerService } from './customer.service';
 import { CustomerController } from './customer.controller';
 import CustomerInfoEntity from './entities/customer.entity';
 import CartItemInfoEntity from './entities/cartItem.entity';
+import ReviewInfoEntity from 'src/product/entities/review.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([CustomerInfoEntity, CartItemInfoEntity]),

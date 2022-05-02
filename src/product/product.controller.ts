@@ -24,6 +24,7 @@ import { ProductService } from './product.service';
 import * as path from 'path';
 import { CustomerService } from 'src/customer/customer.service';
 import { response } from 'express';
+import { ProductReviewDto } from './dtos/product-review.dto';
 
 @Controller('product')
 export class ProductController {
@@ -171,5 +172,13 @@ export class ProductController {
       productId,
       inputProductDto,
     );
+  }
+
+  @Post('/review/add')
+  async addReview(
+    @Body() productReviewDto: ProductReviewDto,
+  ): Promise<any> {
+    // console.log(productReviewDto);
+    return this.productService.insertReview(productReviewDto);
   }
 }

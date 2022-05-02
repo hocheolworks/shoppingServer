@@ -66,7 +66,6 @@ export class AuthService {
     const tokenData = await (
       await axios.post(getAccessTokenUrl, getAccessTokenBody)
     ).data;
-    console.log(tokenData);
 
     const accessToken = tokenData.access_token;
 
@@ -78,17 +77,21 @@ export class AuthService {
       },
     };
 
-    const customerInfo = await (
-      await axios.get(getCustomerInfoUrl, getCustomerInfoBody)
-    ).data;
+    const customerInfo: any = await axios
+      .get(getCustomerInfoUrl, getCustomerInfoBody)
+      .catch((e) => {
+        console.log(e);
+      });
 
-    console.log(customerInfo);
+    console.log('customerInfo >>>>>>>>>>>>>>>>>>', customerInfo);
 
-    if (customerInfo.kakao_account.has_email) {
-      const email = customerInfo.kakao_account.email;
+    if (customerInfo.data.kakao_account.has_email) {
+      const email = customerInfo.data.kakao_account.email;
       const customer = await this.customerInfoRepository.findOne({
         customerEmail: email,
       });
+
+      console.log('customer', customer);
 
       if (customer) {
         console.log(customer);

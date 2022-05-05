@@ -119,9 +119,23 @@ export class ProductService {
         .where('product.id = :productId', { productId: productId })
         .getRawOne();
 
-      fs.rm(product_productImageFilepath, () => {
-        console.log(`Successfully remove ${product_productImageFilepath}`);
-      });
+      fs.rm(
+        product_productImageFilepath,
+        (err: NodeJS.ErrnoException | null) => {
+          if (err) {
+            switch (err.code) {
+              case 'ENOENT':
+                console.log('파일이 존재하지 않습니다.');
+                break;
+              default:
+                console.log(err);
+                break;
+            }
+            return;
+          }
+          console.log(`Successfully remove ${product_productImageFilepath}`);
+        },
+      );
 
       await this.productInfoRepository
         .createQueryBuilder('product')

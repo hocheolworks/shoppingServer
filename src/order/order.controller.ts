@@ -29,12 +29,6 @@ export class OrderController {
       query.amount,
     );
   }
-  @Get('/:customerId')
-  async getOrdersByCustomerId(
-    @Param('customerId') customerId,
-  ): Promise<SelectOrderInfoDto[]> {
-    return await this.orderService.getOrdersByCustomerId(customerId);
-  }
 
   @Get('item-list/:orderId')
   async getOrderItemInfo(
@@ -48,5 +42,19 @@ export class OrderController {
     @Body() insertOrderInfoDto: Partial<InsertOrderInfoDto>,
   ) {
     return this.orderService.insertOrders(insertOrderInfoDto);
+  }
+
+  @Get('/customer/:customerId')
+  async getOrdersByCustomerId(
+    @Param('customerId') customerId,
+  ): Promise<SelectOrderInfoDto[]> {
+    return await this.orderService.getOrdersByCustomerId(customerId);
+  }
+
+  @Get('/:orderId')
+  async getOrderByOrderById(
+    @Param('orderId') orderId,
+  ): Promise<SelectOrderInfoDto> {
+    return await this.orderService.getOrderByOrderId(orderId);
   }
 }

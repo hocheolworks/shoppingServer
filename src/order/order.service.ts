@@ -67,6 +67,15 @@ export class OrderService {
       .getMany();
   }
 
+  async getOrderByOrderId(orderId: number): Promise<SelectOrderInfoDto> {
+    return this.orderInfoRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem_info')
+      .leftJoinAndSelect('orderItem_info.product', 'product_info')
+      .where('order.id = :id', { id: orderId })
+      .getOne();
+  }
+
   async paymentRequest(
     paymentKey: string,
     tossOrderId: string,

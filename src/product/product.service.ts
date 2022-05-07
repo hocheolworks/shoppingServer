@@ -39,7 +39,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .where('product.id = :id', { id: id })
       .leftJoinAndSelect('product.reviews', 'review_info')
-      .leftJoinAndSelect('review_info.customer', 'customer_info')
+      .orderBy("review_info.updatedAt","DESC")
       .getOne();
   }
 
@@ -223,14 +223,23 @@ export class ProductService {
 
     const customer = await this.customerInfoRepository.findOne({'id':customerId});
     const product = await this.productInfoRepository.findOne({'id': productId});
-    const result = this.reviewInfoRepository.save({
+    const result = await this.reviewInfoRepository.save({
       customer:customer, 
       product:product, 
       reviewMessage: message, 
       reviewRating: rating,
       author: author,
     });
-
-    return product;
+    
+    const reviews = await this.reviewInfoRepository.find({
+      where: {product: product},
+      order: {updatedAt:'DESC'},
+    });
+    const response = {
+      'product' : product,
+      'reviews' : reviews,
+    }
+    
+    return response;
   }
 }

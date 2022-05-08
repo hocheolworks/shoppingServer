@@ -216,8 +216,11 @@ export class ProductService {
   }
 
   async insertReview (
-    productReviewDto: ProductReviewDto,
-  ): Promise<any> {
+    productReviewDto: Partial<ProductReviewDto>,
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
 
     const { customerId, productId, author, message, rating } = productReviewDto;
 
@@ -240,6 +243,23 @@ export class ProductService {
       'reviews' : reviews,
     }
     
+    return response;
+  }
+
+  async deleteReview(
+    productReviewDto: Partial<ProductReviewDto>,
+  ): Promise<any> {
+    const result = await this.reviewInfoRepository.delete({id:productReviewDto.id});
+    const product = await this.productInfoRepository.findOne({id:productReviewDto.productId});
+    const reviews = await this.reviewInfoRepository.find({
+      where:{product:product},
+      order:{updatedAt:'DESC'},
+    });
+
+    const response = {
+      'result': result.affected,
+      'reviews': reviews,
+    }
     return response;
   }
 }

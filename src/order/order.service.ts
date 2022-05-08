@@ -81,7 +81,9 @@ export class OrderService {
     tossOrderId: string,
     amount: number,
   ): Promise<any> {
-    const orderId: number = parseInt(tossOrderId.split('-')[1]);
+    const orderIdSplit: string[] = tossOrderId.split('-');
+    const orderId: number = parseInt(orderIdSplit[1]);
+    const customerId: number = parseInt(orderIdSplit[2]);
 
     const options = {
       method: 'POST',
@@ -110,6 +112,8 @@ export class OrderService {
           .set({ orderStatus: '결제완료', orderIsPaid: true })
           .where('id = :orderId', { orderId: orderId })
           .execute();
+
+        await this.customerService.clearCart(customerId);
       } else {
         console.log(response.data);
         throw new HttpException(response.data, response.status);
@@ -150,8 +154,6 @@ export class OrderService {
           product: product,
         });
       }
-
-      await this.customerService.clearCart(result.customerId);
 
       return result;
     } catch (err: any) {

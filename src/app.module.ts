@@ -40,7 +40,7 @@ const envFilePath = 'envs/.env.dev';
         OrderItemInfoEntity,
         CartItemInfoEntity,
       ],
-      synchronize: false,
+      synchronize: true,
       autoLoadEntities: true,
     }),
     CustomerModule,

@@ -176,7 +176,7 @@ export class ProductController {
     );
   }
 
-  @Post('/review/add')
+  @Post('/review')
   async addReview(
     @Body() productReviewDto: Partial<ProductReviewDto>,
   ): Promise<{
@@ -186,7 +186,7 @@ export class ProductController {
     return this.productService.insertReview(productReviewDto);
   }
 
-  @Put('/review/delete')
+  @Put('/review')
   async deleteReview(
     @Body() productReviewDto: Partial<ProductReviewDto>
   ): Promise<any> {

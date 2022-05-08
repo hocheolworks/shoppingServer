@@ -22,11 +22,11 @@ export class AccountService {
    
     const customer = await this.customerInfoRepository.findOne(updateAccountInfoDto.id);
    
-    customer.customerName = updateAccountInfoDto.customerName;
-    customer.customerPostIndex = updateAccountInfoDto.customerPostIndex;
-    customer.customerAddress = updateAccountInfoDto.customerAddress;
-    customer.customerAddressDetail = updateAccountInfoDto.customerAddressDetail;
-    customer.customerPhoneNumber = updateAccountInfoDto.customerPhoneNumber;
+    customer.customerName = updateAccountInfoDto.newCustomerName;
+    customer.customerPostIndex = updateAccountInfoDto.newCustomerPostIndex;
+    customer.customerAddress = updateAccountInfoDto.newCustomerAddress;
+    customer.customerAddressDetail = updateAccountInfoDto.newCustomerAddressDetail;
+    customer.customerPhoneNumber = updateAccountInfoDto.newCustomerPhoneNumber;
     customer.updatedAt = new Date();
    
     await this.customerInfoRepository.save(customer);

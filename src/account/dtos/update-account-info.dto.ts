@@ -19,7 +19,7 @@ export class UpdateAccountInfoDto {
     @IsNotEmpty({ message: '이메일을 올바른 형식으로 입력해주세요' })
     @Length(10, 100, { message: '이메일을 올바른 형식으로 입력해주세요' })
     @IsEmail({ message: '이메일을 올바른 형식으로 입력해주세요' })
-    customerEmail: string;
+    newCustomerEmail: string;
 
     @ApiProperty({
       description: '고객명',
@@ -29,7 +29,7 @@ export class UpdateAccountInfoDto {
     @Length(2, 20)
     @IsNotEmpty({ message: '이름을 확인해주세요' })
     @Matches(/^[가-힣]+$/, { message: '이름을 올바르게 입력해주세요' })
-    customerName: string;
+    newCustomerName: string;
 
     @ApiProperty({
       description: '고객 전화번호',
@@ -39,7 +39,7 @@ export class UpdateAccountInfoDto {
     @IsNotEmpty({ message: '휴대폰 번호를 입력해주세요.' })
     @IsString({ message: '휴대폰 번호를 올바른 형식으로 입력해주세요.' })
     @Length(10, 30, { message: '휴대폰 번호를 올바른 형식으로 입력해주세요.' })
-    customerPhoneNumber: string;
+    newCustomerPhoneNumber: string;
 
     @ApiProperty({
     description: '고객 우편번호',
@@ -48,7 +48,7 @@ export class UpdateAccountInfoDto {
     })
     @IsNotEmpty({ message: '우편번호를 입력해주세요.' })
     @IsString({ message: '우편번호를 올바른 형식으로 입력해주세요.' })
-    customerPostIndex: string;
+    newCustomerPostIndex: string;
 
 
     @ApiProperty({
@@ -58,7 +58,7 @@ export class UpdateAccountInfoDto {
     })
     @IsNotEmpty({ message: '주소를 입력해주세요.' })
     @IsString({ message: '주소를 올바른 형식으로 입력해주세요.' })
-    customerAddress: string;
+    newCustomerAddress: string;
 
     @ApiProperty({
     description: '고객 상세 주소',
@@ -67,5 +67,5 @@ export class UpdateAccountInfoDto {
     })
     @IsNotEmpty({ message: '상세주소를 입력해주세요.' })
     @IsString({ message: '상세주소를 올바른 형식으로 입력해주세요.' })
-    customerAddressDetail: string;
+    newCustomerAddressDetail: string;
 }

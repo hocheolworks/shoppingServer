@@ -21,6 +21,9 @@ class ReviewInfoEntity extends CoreEntity {
   product: ProductInfoEntity;
 
   @Column()
+  author: string;
+
+  @Column()
   reviewMessage: string;
 
   @Column({ type: 'int' })

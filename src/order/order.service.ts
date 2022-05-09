@@ -80,10 +80,10 @@ export class OrderService {
     paymentKey: string,
     tossOrderId: string,
     amount: number,
+    insertOrder: Partial<InsertOrderInfoDto>,
   ): Promise<any> {
     const orderIdSplit: string[] = tossOrderId.split('-');
-    const orderId: number = parseInt(orderIdSplit[1]);
-    const customerId: number = parseInt(orderIdSplit[2]);
+    const customerId: number = parseInt(orderIdSplit[1]);
 
     const options = {
       method: 'POST',
@@ -106,13 +106,7 @@ export class OrderService {
 
       if (response.status === 200) {
         // 결제 성공
-        await this.orderInfoRepository
-          .createQueryBuilder()
-          .update(OrderInfoEntity)
-          .set({ orderStatus: '결제완료', orderIsPaid: true })
-          .where('id = :orderId', { orderId: orderId })
-          .execute();
-
+        await this.insertOrder(insertOrder, true);
         await this.customerService.clearCart(customerId);
       } else {
         console.log(response.data);
@@ -124,8 +118,9 @@ export class OrderService {
       throw new InternalServerErrorException(err);
     }
   }
-  async insertOrders(
+  async insertOrder(
     insertOrderInfoDto: Partial<InsertOrderInfoDto>,
+    isPaid: boolean,
   ): Promise<SelectOrderInfoDto> {
     try {
       const newOrderInfo = this.orderInfoRepository.create({
@@ -137,6 +132,8 @@ export class OrderService {
         orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
         orderMemo: insertOrderInfoDto.orderMemo,
         orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
+        orderStatus: isPaid ? '결제완료' : '결제대기',
+        orderIsPaid: isPaid,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;

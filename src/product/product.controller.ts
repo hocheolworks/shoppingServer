@@ -42,7 +42,7 @@ export class ProductController {
     return await this.productService.getProductById(id);
   }
 
-  @Post('/new')
+  @Post('/')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({

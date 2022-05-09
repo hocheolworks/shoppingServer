@@ -17,7 +17,7 @@ export class AccountService {
   ) {}
 
   async updateCustomerInfo(
-    updateAccountInfoDto: UpdateAccountInfoDto,
+    updateAccountInfoDto: Partial<UpdateAccountInfoDto>,
   ): Promise<CustomerInfoEntity>{
    
     const customer = await this.customerInfoRepository.findOne(updateAccountInfoDto.id);

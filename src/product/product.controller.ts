@@ -192,4 +192,14 @@ export class ProductController {
   ): Promise<any> {
     return this.productService.deleteReview(productReviewDto);
   }
+
+  @Get('/review/:id')
+  async getReview(
+    @Param('id') productId: number
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
+    return this.productService.selectReview(productId);
+  }
 }

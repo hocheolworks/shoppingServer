@@ -13,7 +13,6 @@ export class AccountController {
   async updateAccount(
     @Body() updateAccountInfoDto: any,
   ): Promise<CustomerInfoEntity> {
-    console.log(updateAccountInfoDto);
     return this.accountService.updateCustomerInfo(updateAccountInfoDto);
   }
 

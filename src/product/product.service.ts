@@ -255,11 +255,33 @@ export class ProductService {
       where:{product:product},
       order:{updatedAt:'DESC'},
     });
-
+    
     const response = {
       'result': result.affected,
       'reviews': reviews,
     }
+    
     return response;
+  }
+
+  async selectReview(
+    productId: number,
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
+
+    const product = await this.productInfoRepository.findOne({id:productId});
+    const reviews = await this.reviewInfoRepository.find({
+      where:{product:product},
+      order:{updatedAt:'DESC'},
+    });
+
+    const response = {
+      'product': product,
+      'reviews': reviews,
+    }
+    
+    return response
   }
 }

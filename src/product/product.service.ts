@@ -13,12 +13,18 @@ import { InputProductInfoDtd } from './dtos/input-product-info.dto';
 import { InsertProductError } from './dtos/product-error.dto';
 import * as fs from 'fs';
 import CustomerInfoEntity from 'src/customer/entities/customer.entity';
+import ReviewInfoEntity from './entities/review.entity';
+import { ProductReviewDto } from './dtos/product-review.dto';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
+    @InjectRepository(ReviewInfoEntity)
+    private readonly reviewInfoRepository: Repository<ReviewInfoEntity>,
+    @InjectRepository(CustomerInfoEntity)
+    private readonly customerInfoRepository: Repository<CustomerInfoEntity>,
   ) {}
 
   async getAllProducts(): Promise<SelectProductInfoDto[]> {
@@ -33,7 +39,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .where('product.id = :id', { id: id })
       .leftJoinAndSelect('product.reviews', 'review_info')
-      .leftJoinAndSelect('review_info.customer', 'customer_info')
+      .orderBy("review_info.updatedAt","DESC")
       .getOne();
   }
 
@@ -119,9 +125,23 @@ export class ProductService {
         .where('product.id = :productId', { productId: productId })
         .getRawOne();
 
-      fs.rm(product_productImageFilepath, () => {
-        console.log(`Successfully remove ${product_productImageFilepath}`);
-      });
+      fs.rm(
+        product_productImageFilepath,
+        (err: NodeJS.ErrnoException | null) => {
+          if (err) {
+            switch (err.code) {
+              case 'ENOENT':
+                console.log('파일이 존재하지 않습니다.');
+                break;
+              default:
+                console.log(err);
+                break;
+            }
+            return;
+          }
+          console.log(`Successfully remove ${product_productImageFilepath}`);
+        },
+      );
 
       await this.productInfoRepository
         .createQueryBuilder('product')
@@ -193,5 +213,75 @@ export class ProductService {
       .createQueryBuilder('product')
       .where('product.id = :productId', { productId: productId })
       .getOne();
+  }
+
+  async insertReview (
+    productReviewDto: Partial<ProductReviewDto>,
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
+
+    const { customerId, productId, author, message, rating } = productReviewDto;
+
+    const customer = await this.customerInfoRepository.findOne({'id':customerId});
+    const product = await this.productInfoRepository.findOne({'id': productId});
+    const result = await this.reviewInfoRepository.save({
+      customer:customer, 
+      product:product, 
+      reviewMessage: message, 
+      reviewRating: rating,
+      author: author,
+    });
+    
+    const reviews = await this.reviewInfoRepository.find({
+      where: {product: product},
+      order: {updatedAt:'DESC'},
+    });
+    const response = {
+      'product' : product,
+      'reviews' : reviews,
+    }
+    
+    return response;
+  }
+
+  async deleteReview(
+    productReviewDto: Partial<ProductReviewDto>,
+  ): Promise<any> {
+    const result = await this.reviewInfoRepository.delete({id:productReviewDto.id});
+    const product = await this.productInfoRepository.findOne({id:productReviewDto.productId});
+    const reviews = await this.reviewInfoRepository.find({
+      where:{product:product},
+      order:{updatedAt:'DESC'},
+    });
+    
+    const response = {
+      'result': result.affected,
+      'reviews': reviews,
+    }
+    
+    return response;
+  }
+
+  async selectReview(
+    productId: number,
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
+
+    const product = await this.productInfoRepository.findOne({id:productId});
+    const reviews = await this.reviewInfoRepository.find({
+      where:{product:product},
+      order:{updatedAt:'DESC'},
+    });
+
+    const response = {
+      'product': product,
+      'reviews': reviews,
+    }
+    
+    return response
   }
 }

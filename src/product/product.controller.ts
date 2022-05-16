@@ -24,6 +24,9 @@ import { ProductService } from './product.service';
 import * as path from 'path';
 import { CustomerService } from 'src/customer/customer.service';
 import { response } from 'express';
+import { ProductReviewDto } from './dtos/product-review.dto';
+import ProductInfoEntity from './entities/product.entity';
+import ReviewInfoEntity from './entities/review.entity';
 
 @Controller('product')
 export class ProductController {
@@ -42,7 +45,7 @@ export class ProductController {
     return await this.productService.getProductById(id);
   }
 
-  @Post('/new')
+  @Post('/')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -171,5 +174,32 @@ export class ProductController {
       productId,
       inputProductDto,
     );
+  }
+
+  @Post('/review')
+  async addReview(
+    @Body() productReviewDto: Partial<ProductReviewDto>,
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
+    return this.productService.insertReview(productReviewDto);
+  }
+
+  @Put('/review')
+  async deleteReview(
+    @Body() productReviewDto: Partial<ProductReviewDto>
+  ): Promise<any> {
+    return this.productService.deleteReview(productReviewDto);
+  }
+
+  @Get('/review/:id')
+  async getReview(
+    @Param('id') productId: number
+  ): Promise<{
+    'product': ProductInfoEntity,
+    'reviews': Array<ReviewInfoEntity>,
+  }> {
+    return this.productService.selectReview(productId);
   }
 }

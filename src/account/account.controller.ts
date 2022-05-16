@@ -11,9 +11,8 @@ export class AccountController {
 
   @Put('/edit')
   async updateAccount(
-    @Body() updateAccountInfoDto: UpdateAccountInfoDto,
+    @Body() updateAccountInfoDto: any,
   ): Promise<CustomerInfoEntity> {
-    // console.log(updateAccountInfoDto);
     return this.accountService.updateCustomerInfo(updateAccountInfoDto);
   }
 

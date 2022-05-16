@@ -67,12 +67,23 @@ export class OrderService {
       .getMany();
   }
 
+  async getOrderByOrderId(orderId: number): Promise<SelectOrderInfoDto> {
+    return this.orderInfoRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem_info')
+      .leftJoinAndSelect('orderItem_info.product', 'product_info')
+      .where('order.id = :id', { id: orderId })
+      .getOne();
+  }
+
   async paymentRequest(
     paymentKey: string,
     tossOrderId: string,
     amount: number,
+    insertOrder: Partial<InsertOrderInfoDto>,
   ): Promise<any> {
-    const orderId: number = parseInt(tossOrderId.split('-')[1]);
+    const orderIdSplit: string[] = tossOrderId.split('-');
+    const customerId: number = parseInt(orderIdSplit[1]);
 
     const options = {
       method: 'POST',
@@ -95,12 +106,8 @@ export class OrderService {
 
       if (response.status === 200) {
         // 결제 성공
-        await this.orderInfoRepository
-          .createQueryBuilder()
-          .update(OrderInfoEntity)
-          .set({ orderStatus: '결제완료', orderIsPaid: true })
-          .where('id = :orderId', { orderId: orderId })
-          .execute();
+        await this.insertOrder(insertOrder, true);
+        await this.customerService.clearCart(customerId);
       } else {
         console.log(response.data);
         throw new HttpException(response.data, response.status);
@@ -111,8 +118,9 @@ export class OrderService {
       throw new InternalServerErrorException(err);
     }
   }
-  async insertOrders(
+  async insertOrder(
     insertOrderInfoDto: Partial<InsertOrderInfoDto>,
+    isPaid: boolean,
   ): Promise<SelectOrderInfoDto> {
     try {
       const newOrderInfo = this.orderInfoRepository.create({
@@ -124,6 +132,8 @@ export class OrderService {
         orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
         orderMemo: insertOrderInfoDto.orderMemo,
         orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
+        orderStatus: isPaid ? '결제완료' : '결제대기',
+        orderIsPaid: isPaid,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;
@@ -141,8 +151,6 @@ export class OrderService {
           product: product,
         });
       }
-
-      await this.customerService.clearCart(result.customerId);
 
       return result;
     } catch (err: any) {
@@ -165,4 +173,20 @@ export class OrderService {
       .leftJoinAndSelect('orderItem_info.product', 'product_info')
       .getMany();
   }
+
+  async checkCustomerOrderItem(productId: number, customerId: number): Promise<Boolean> {
+    const orderList = await this.orderInfoRepository.find({customerId: customerId});
+    const product = await this.productInfoRepository.findOne({id: productId});
+    
+    let is_purchased = false;
+    for(let i=0; i<orderList.length; i++) {
+      const orderItemCount = await this.orderItemInfoRepository.count({ product: product, orderId: orderList[i].id});
+      if (orderItemCount != 0) {
+        is_purchased = true;
+        break;
+      }
+    }
+  
+    return is_purchased;
+  } 
 }

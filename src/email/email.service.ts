@@ -12,9 +12,6 @@ export class EmailService {
     sendEmailDto: SendEmailDto,
     verifyNumber: number,
   ) {
-    const baseUrl = 'http://localhost:8080'; // TODO: config
-    //    const url = `${baseUrl}/api/v1/customer/email-verify?signupVerifyToken=${signupVerifyToken}`;
-
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
@@ -24,6 +21,14 @@ export class EmailService {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
+
+    console.log(
+      process.env.EMAIL_HOST,
+      process.env.EMAIL_PORT,
+      process.env.EMAIL_SECURE,
+      process.env.EMAIL_USER,
+      process.env.EMAIL_PASSWORD,
+    );
 
     await transporter.verify().catch((e: Error) => {
       throw new BadRequestException(

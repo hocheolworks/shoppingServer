@@ -48,9 +48,9 @@ export class CustomerService {
       }
 
       const registrationEmailData: SendEmailDto = {
-        from: '일진유통 slogupemailmoduletest@gmail.com', //TODO 하드코딩
+        from: '일조유통 iljotradingcompany@gmail.com', //TODO 하드코딩
         to: customerEmail,
-        title: '일진유통 회원가입 확인 안내',
+        title: '일조유통 회원가입 확인 안내',
         customerName: customerName,
       };
 

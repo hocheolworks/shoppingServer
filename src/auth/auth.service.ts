@@ -60,13 +60,14 @@ export class AuthService {
         'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
       },
     };
-    const codeFromObject = code['code '];
+
+    const codeFromObject = code['code '].trim();
+    console.log(codeFromObject);
     const getAccessTokenUrl = `https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=${process.env.REST_API_KEY}&redirect_uri=${process.env.REDIRECT_URL}&code=${codeFromObject}`;
-
-    const tokenData = await (
-      await axios.post(getAccessTokenUrl, getAccessTokenBody)
-    ).data;
-
+    console.log(getAccessTokenUrl);
+    const res = await axios.post(getAccessTokenUrl, getAccessTokenBody);
+    console.log(res);
+    const tokenData = res.data;
     const accessToken = tokenData.access_token;
 
     const getCustomerInfoUrl = `https://kapi.kakao.com/v2/user/me`;

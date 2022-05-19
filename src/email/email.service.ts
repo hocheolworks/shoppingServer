@@ -22,18 +22,8 @@ export class EmailService {
       },
     });
 
-    console.log(
-      process.env.EMAIL_HOST,
-      process.env.EMAIL_PORT,
-      process.env.EMAIL_SECURE,
-      process.env.EMAIL_USER,
-      process.env.EMAIL_PASSWORD,
-    );
-
     await transporter.verify().catch((e: Error) => {
-      throw new BadRequestException(
-        `${emailConstants.errorMessages.INVALID_FROM},${e}`,
-      );
+      throw new BadRequestException(`${e}`);
     });
 
     const { to, from, title } = sendEmailDto;

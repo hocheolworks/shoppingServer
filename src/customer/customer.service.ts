@@ -48,13 +48,20 @@ export class CustomerService {
       }
 
       const registrationEmailData: SendEmailDto = {
-        from: '일조유통 iljotradingcompany@gmail.com', //TODO 하드코딩
+        from: '일조유통 iljotradingcompany@gmail.com',
         to: customerEmail,
         title: '일조유통 회원가입 확인 안내',
         customerName: customerName,
       };
 
-      this.sendCustomerJoinEmail(registrationEmailData, verifyNumber);
+      const result = await this.sendCustomerJoinEmail(
+        registrationEmailData,
+        verifyNumber,
+      );
+
+      console.log(result);
+
+      return result;
     }
   }
 
@@ -156,7 +163,6 @@ export class CustomerService {
       issuer: 'example.com',
     });
 
-    console.log(result);
     return result;
   }
 
@@ -164,10 +170,15 @@ export class CustomerService {
     sendEmailDto: SendEmailDto,
     verifyNumber: number,
   ) {
-    return await this.emailService.sendCustomerJoinEmail(
+    console.log('here');
+
+    const result = await this.emailService.sendCustomerJoinEmail(
       sendEmailDto,
       verifyNumber,
     );
+
+    console.log(result);
+    return result;
   }
 
   async checkAdmin(customerId: number): Promise<boolean> {

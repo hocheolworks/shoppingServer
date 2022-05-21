@@ -13,9 +13,11 @@ import {
   Res,
   UnauthorizedException,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
 import { diskStorage } from 'multer';
 import { InputProductInfoDtd } from './dtos/input-product-info.dto';
 import { InsertProductError } from './dtos/product-error.dto';
@@ -27,6 +29,15 @@ import { response } from 'express';
 import { ProductReviewDto } from './dtos/product-review.dto';
 import ProductInfoEntity from './entities/product.entity';
 import ReviewInfoEntity from './entities/review.entity';
+import * as multerS3 from 'multer-s3';
+import * as AWS from 'aws-sdk';
+
+const s3 = new AWS.S3();
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
 
 @Controller('product')
 export class ProductController {
@@ -48,26 +59,31 @@ export class ProductController {
   @Post('/')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './public/images/product',
-        filename: (req, file, callback) => {
+      storage: multerS3({
+        s3: s3,
+        bucket: 'iljo-product',
+        acl: 'public-read',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        key: function (req, file, cb) {
           const extension = path.extname(file.originalname);
-          const basename = path.basename(file.originalname, extension);
-          callback(null, `${basename}-${Date.now()}${extension}`);
+          cb(null, file.originalname + Date.now().toString() + extension);
         },
       }),
     }),
   )
   async insertProduct(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Body() product,
   ): Promise<SelectProductInfoDto[]> {
+    console.log(file);
     const inputProductDto = new InputProductInfoDtd();
     inputProductDto.productName = product.productName;
     inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
     inputProductDto.productDescription = product.productDescription;
     inputProductDto.productPrice = parseInt(product.productPrice);
-    inputProductDto.productImageFilepath = file.path;
+    inputProductDto.productImageFilepath = file.location;
+
+    console.log(inputProductDto);
 
     if (isNaN(product.customerId)) {
       throw new BadRequestException({
@@ -82,6 +98,7 @@ export class ProductController {
         error: error,
       });
     }
+    // await this.uploadImage(file);
 
     return await this.productService.insertProduct(inputProductDto);
   }
@@ -91,7 +108,7 @@ export class ProductController {
     @Param('productId') productId: number,
     @Query('customerId') customerId: number,
   ): Promise<SelectProductInfoDto[]> {
-    const isAdmin: Boolean = await this.customerService.checkAdmin(customerId);
+    const isAdmin: boolean = await this.customerService.checkAdmin(customerId);
     if (!isAdmin) {
       const error: InsertProductError = new InsertProductError();
       error.customerRoleError = '관리자 계정이 아닙니다.';
@@ -106,23 +123,25 @@ export class ProductController {
   @Put('/:productId/w/image')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './public/images/product',
-        filename: (req, file, callback) => {
+      storage: multerS3({
+        s3: s3,
+        bucket: 'iljo-product',
+        acl: 'public-read',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        key: function (req, file, cb) {
           const extension = path.extname(file.originalname);
-          const basename = path.basename(file.originalname, extension);
-          callback(null, `${basename}-${Date.now()}${extension}`);
+          cb(null, file.originalname + Date.now().toString() + extension);
         },
       }),
     }),
   )
   async updateProductWithImage(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Param('productId') productId: number,
     @Query('customerId') customerId: number,
     @Body() product,
   ): Promise<SelectProductInfoDto> {
-    const isAdmin: Boolean = await this.customerService.checkAdmin(customerId);
+    const isAdmin: boolean = await this.customerService.checkAdmin(customerId);
     if (!isAdmin) {
       const error: InsertProductError = new InsertProductError();
       error.customerRoleError = '관리자 계정이 아닙니다.';
@@ -136,7 +155,7 @@ export class ProductController {
     inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
     inputProductDto.productDescription = product.productDescription;
     inputProductDto.productPrice = parseInt(product.productPrice);
-    inputProductDto.productImageFilepath = file.path;
+    inputProductDto.productImageFilepath = file.location;
 
     return this.productService.updateProductWithImage(
       productId,
@@ -150,7 +169,7 @@ export class ProductController {
     @Query('customerId') customerId: number,
     @Body() product,
   ): Promise<SelectProductInfoDto> {
-    const isAdmin: Boolean = await this.customerService.checkAdmin(customerId);
+    const isAdmin: boolean = await this.customerService.checkAdmin(customerId);
     if (!isAdmin) {
       const error: InsertProductError = new InsertProductError();
       error.customerRoleError = '관리자 계정이 아닙니다.';
@@ -180,26 +199,40 @@ export class ProductController {
   async addReview(
     @Body() productReviewDto: Partial<ProductReviewDto>,
   ): Promise<{
-    'product': ProductInfoEntity,
-    'reviews': Array<ReviewInfoEntity>,
+    product: ProductInfoEntity;
+    reviews: Array<ReviewInfoEntity>;
   }> {
     return this.productService.insertReview(productReviewDto);
   }
 
   @Put('/review')
   async deleteReview(
-    @Body() productReviewDto: Partial<ProductReviewDto>
+    @Body() productReviewDto: Partial<ProductReviewDto>,
   ): Promise<any> {
     return this.productService.deleteReview(productReviewDto);
   }
 
   @Get('/review/:id')
-  async getReview(
-    @Param('id') productId: number
-  ): Promise<{
-    'product': ProductInfoEntity,
-    'reviews': Array<ReviewInfoEntity>,
+  async getReview(@Param('id') productId: number): Promise<{
+    product: ProductInfoEntity;
+    reviews: Array<ReviewInfoEntity>;
   }> {
     return this.productService.selectReview(productId);
   }
+
+  // @UseInterceptors(
+  //   FilesInterceptor('files', 3, {
+  //     storage: multerS3({
+  //       s3: s3,
+  //       bucket: process.env.AWS_S3_BUCKET_NAME,
+  //       acl: 'public-read',
+  //       key: function (req, file, cb) {
+  //         cb(null, file.originalname);
+  //       },
+  //     }),
+  //   }),
+  // )
+  // async uploadImage(@UploadedFiles() files: Express.Multer.File) {
+  //   return this.productService.uploadImage(files);
+  // }
 }

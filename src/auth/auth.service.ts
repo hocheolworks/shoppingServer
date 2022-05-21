@@ -66,6 +66,7 @@ export class AuthService {
     const getAccessTokenUrl = `https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=${process.env.REST_API_KEY}&redirect_uri=${process.env.REDIRECT_URL}&code=${codeFromObject}`;
     console.log(getAccessTokenUrl);
     const res = await axios.post(getAccessTokenUrl, getAccessTokenBody);
+
     console.log(res);
     const tokenData = res.data;
     const accessToken = tokenData.access_token;

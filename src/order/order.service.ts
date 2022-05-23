@@ -13,6 +13,8 @@ import OrderItemInfoEntity from './entities/orderItem.entity';
 import * as http from 'https';
 import { CustomerService } from 'src/customer/customer.service';
 import { TossPaymentResponse } from 'src/common/types/types';
+import { PaymentService } from 'src/payment/payment.service';
+import { PaymentHistoryDto } from 'src/payment/dto/history.dto';
 
 function TossPaymentRequest(options, data) {
   return new Promise<TossPaymentResponse>((resolve, reject) => {
@@ -54,6 +56,7 @@ export class OrderService {
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
 
     private readonly customerService: CustomerService,
+    private readonly paymentService: PaymentService,
   ) {}
 
   async getOrdersByCustomerId(
@@ -109,6 +112,9 @@ export class OrderService {
         insertOrder.orderId = tossOrderId;
         await this.insertOrder(insertOrder, true);
         await this.customerService.clearCart(customerId);
+        await this.paymentService.insertPaymentHistory(
+          response.data as PaymentHistoryDto,
+        );
       } else {
         console.log(response.data);
         throw new HttpException(response.data, response.status);
@@ -135,6 +141,7 @@ export class OrderService {
         orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
         orderStatus: isPaid ? '결제완료' : '결제대기',
         orderIsPaid: isPaid,
+        orderId: insertOrderInfoDto.orderId,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;

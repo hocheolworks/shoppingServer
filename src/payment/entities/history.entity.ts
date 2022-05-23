@@ -215,7 +215,7 @@ class PaymentHistoryEntity {
   @Column({
     type: 'varchar',
     length: 8,
-    comment: '결제한 국가 정보입니다. ISO-3166의 두 자리 국가 코드 형식',
+    comment: '결제한 국가 정보입, ISO-3166의 두 자리 국가 코드 형식',
   })
   country: string;
 

@@ -106,6 +106,7 @@ export class OrderService {
 
       if (response.status === 200) {
         // 결제 성공
+        insertOrder.orderId = tossOrderId;
         await this.insertOrder(insertOrder, true);
         await this.customerService.clearCart(customerId);
       } else {
@@ -174,19 +175,27 @@ export class OrderService {
       .getMany();
   }
 
-  async checkCustomerOrderItem(productId: number, customerId: number): Promise<Boolean> {
-    const orderList = await this.orderInfoRepository.find({customerId: customerId});
-    const product = await this.productInfoRepository.findOne({id: productId});
-    
+  async checkCustomerOrderItem(
+    productId: number,
+    customerId: number,
+  ): Promise<Boolean> {
+    const orderList = await this.orderInfoRepository.find({
+      customerId: customerId,
+    });
+    const product = await this.productInfoRepository.findOne({ id: productId });
+
     let is_purchased = false;
-    for(let i=0; i<orderList.length; i++) {
-      const orderItemCount = await this.orderItemInfoRepository.count({ product: product, orderId: orderList[i].id});
+    for (let i = 0; i < orderList.length; i++) {
+      const orderItemCount = await this.orderItemInfoRepository.count({
+        product: product,
+        orderId: orderList[i].id,
+      });
       if (orderItemCount != 0) {
         is_purchased = true;
         break;
       }
     }
-  
+
     return is_purchased;
-  } 
+  }
 }

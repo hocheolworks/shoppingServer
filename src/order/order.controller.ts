@@ -44,11 +44,6 @@ export class OrderController {
     return await this.orderService.getOrderItemInfo(orderId);
   }
 
-  // @Post('/payment')
-  // async insertOrder(@Body() insertOrderInfoDto: Partial<InsertOrderInfoDto>) {
-  //   return this.orderService.insertOrder(insertOrderInfoDto);
-  // }
-
   @Post('/is-purchase')
   async checkPurchase(
     @Body('productId') productId: any,
@@ -56,7 +51,7 @@ export class OrderController {
   ): Promise<Boolean> {
     return this.orderService.checkCustomerOrderItem(productId, customerId);
   }
-  
+
   @Get('/customer/:customerId')
   async getOrdersByCustomerId(
     @Param('customerId') customerId,

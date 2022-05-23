@@ -43,6 +43,8 @@ class OrderInfoEntity extends CoreEntity {
   @Column({ type: 'boolean', comment: '결제 여부', default: false })
   orderIsPaid: boolean;
 
+  @Column({ type: 'varchar', length: 128, comment: '토스 결제 주문 ID' })
+  orderId: string;
   @Column()
   customerId: number;
 

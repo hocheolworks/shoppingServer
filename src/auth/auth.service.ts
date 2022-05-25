@@ -1,3 +1,4 @@
+import { response } from 'express';
 import { LoginRequestDto } from './dtos/login.request.dto';
 import { Repository } from 'typeorm';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
@@ -5,8 +6,15 @@ import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import axios from 'axios';
+import { InternalServerErrorException } from '@nestjs/common';
+import * as crypto from 'crypto';
+
+const SMS_ID = process.env.SMS_ID;
+const SMS_KEY = process.env.SMS_KEY;
+const ACCESS_KEY = process.env.IAM_ACCESS_KEY;
+const SECRET_KEY = process.env.IAM_SECRET_KEY;
+const SMS_SENDER = process.env.SMS_SENDER;
 
 @Injectable()
 export class AuthService {
@@ -15,6 +23,70 @@ export class AuthService {
     private readonly customerInfoRepository: Repository<CustomerInfoEntity>,
     private readonly jwtService: JwtService,
   ) {}
+
+  private makeSignature(): string {
+    const message = [];
+    const hmac = crypto.createHmac('sha256', process.env.IAM_SECRET_KEY);
+    const space = ' ';
+    const newLine = '\n';
+    const method = 'POST';
+    const timestamp = Date.now().toString();
+    message.push(method);
+    message.push(space);
+    message.push(`/sms/v2/services/${process.env.SMS_ID}/messages`);
+    message.push(newLine);
+    message.push(timestamp);
+    message.push(newLine);
+    message.push(process.env.IAM_ACCESS_KEY);
+    //message 배열에 위의 내용들을 담아준 후에
+    console.log(message.join(''));
+    const signature = hmac.update(message.join('')).digest('base64');
+    //message.join('') 으로 만들어진 string 을 hmac 에 담고, base64로 인코딩한다
+    return signature.toString(); // toString()이 없었어서 에러가 자꾸 났었는데, 반드시 고쳐야함.
+  }
+
+  async sendSMS(phoneNumber: string) {
+    const body = {
+      type: 'SMS',
+      contentType: 'COMM',
+      countryCode: '82',
+      from: process.env.SMS_SENDER,
+      content: `메롱~~~~~.`,
+      messages: [
+        {
+          to: phoneNumber,
+        },
+      ],
+    };
+    const options = {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'x-ncp-apigw-timestamp': Date.now().toString(),
+        'x-ncp-iam-access-key': process.env.IAM_ACCESS_KEY,
+        'x-ncp-apigw-signature-v2': this.makeSignature(),
+      },
+    };
+    console.log(body);
+    console.log(options);
+    console.log(
+      `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
+    );
+    await axios
+      .post(
+        `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
+        body,
+        options,
+      )
+      .then(async (res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.error(err.response.data);
+        throw new InternalServerErrorException();
+      });
+
+    return options.headers;
+  }
 
   async jwtLogIn(loginRequestDto: LoginRequestDto) {
     const { customerEmail, customerPassword } = loginRequestDto;

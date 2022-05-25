@@ -28,6 +28,11 @@ export class CustomerController {
     private readonly authService: AuthService,
   ) {}
 
+  @Post('/temp/test')
+  async verifyPhone(): Promise<any> {
+    return await this.authService.sendSMS('01073830644');
+  }
+
   @Get('/all')
   async getCustomerList(): Promise<CustomerInfoEntity[]> {
     return await this.customerService.getCustomerList();

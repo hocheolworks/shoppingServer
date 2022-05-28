@@ -97,6 +97,7 @@ class PaymentHistoryEntity {
   @Column({
     type: 'datetime',
     comment: '결제 승인이 일어난 날짜와 시간 정보, ISO 8601',
+    nullable: true,
   })
   approvedAt: Date;
 

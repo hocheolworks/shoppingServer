@@ -9,10 +9,15 @@ import {
 } from '@nestjs/common';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import { OrderService } from './order.service';
+import { PaymentService } from './payment.service';
+import { VirtualAccountWebhookBody } from 'src/common/types/types';
 
 @Controller('order')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly paymentService: PaymentService,
+  ) {}
 
   @Get('/all')
   async getOrderList() {
@@ -64,5 +69,11 @@ export class OrderController {
     @Param('orderId') orderId,
   ): Promise<SelectOrderInfoDto> {
     return await this.orderService.getOrderByOrderId(orderId);
+  }
+
+  @Post('/payment/webhook/virtual-account')
+  async webhookVirtualAccount(@Body() body: VirtualAccountWebhookBody) {
+    await this.paymentService.receiveVirtualAccountWebhook(body);
+    await this.orderService.updateOrderIsPaid(body.orderId, body.status);
   }
 }

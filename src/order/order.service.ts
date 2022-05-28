@@ -13,8 +13,8 @@ import OrderItemInfoEntity from './entities/orderItem.entity';
 import * as http from 'https';
 import { CustomerService } from 'src/customer/customer.service';
 import { TossPaymentResponse } from 'src/common/types/types';
-import { PaymentService } from 'src/payment/payment.service';
-import { PaymentHistoryDto } from 'src/payment/dto/history.dto';
+import { PaymentService } from 'src/order/payment.service';
+import { PaymentHistoryDto } from 'src/order/dtos/payment-history.dto';
 
 function TossPaymentRequest(options, data) {
   return new Promise<TossPaymentResponse>((resolve, reject) => {
@@ -110,7 +110,10 @@ export class OrderService {
       if (response.status === 200) {
         // 결제 성공
         insertOrder.orderId = tossOrderId;
-        await this.insertOrder(insertOrder, true);
+        await this.insertOrder(
+          insertOrder,
+          (response.data as PaymentHistoryDto).method !== '가상계좌',
+        );
         await this.customerService.clearCart(customerId);
         await this.paymentService.insertPaymentHistory(
           response.data as PaymentHistoryDto,
@@ -166,8 +169,33 @@ export class OrderService {
     }
   }
 
-  async updateOrder(orderId: number): Promise<boolean> {
-    return;
+  async updateOrderIsPaid(orderId: string, status: string): Promise<boolean> {
+    try {
+      let orderStatus = '결제대기';
+      switch (status) {
+        case 'DONE':
+          orderStatus = '결제완료';
+          break;
+        case 'CANCELED':
+          orderStatus = '주문취소';
+          break;
+        case 'PARTIAL_CANCELED':
+          orderStatus = '입금부분취소';
+          break;
+      }
+      await this.orderInfoRepository
+        .createQueryBuilder()
+        .update(OrderInfoEntity)
+        .set({
+          orderIsPaid: status === 'DONE',
+          orderStatus: orderStatus,
+        })
+        .where('orderId = :orderId', { orderId: orderId })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+    return true;
   }
 
   async getOrderItemInfo(orderId: number) {

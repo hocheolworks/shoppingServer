@@ -13,6 +13,8 @@ import OrderItemInfoEntity from './entities/orderItem.entity';
 import * as http from 'https';
 import { CustomerService } from 'src/customer/customer.service';
 import { TossPaymentResponse } from 'src/common/types/types';
+import { PaymentService } from 'src/order/payment.service';
+import { PaymentHistoryDto } from 'src/order/dtos/payment-history.dto';
 
 function TossPaymentRequest(options, data) {
   return new Promise<TossPaymentResponse>((resolve, reject) => {
@@ -54,6 +56,7 @@ export class OrderService {
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
 
     private readonly customerService: CustomerService,
+    private readonly paymentService: PaymentService,
   ) {}
 
   async getOrdersByCustomerId(
@@ -106,8 +109,15 @@ export class OrderService {
 
       if (response.status === 200) {
         // 결제 성공
-        await this.insertOrder(insertOrder, true);
+        insertOrder.orderId = tossOrderId;
+        await this.insertOrder(
+          insertOrder,
+          (response.data as PaymentHistoryDto).method !== '가상계좌',
+        );
         await this.customerService.clearCart(customerId);
+        await this.paymentService.insertPaymentHistory(
+          response.data as PaymentHistoryDto,
+        );
       } else {
         console.log(response.data);
         throw new HttpException(response.data, response.status);
@@ -134,6 +144,7 @@ export class OrderService {
         orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
         orderStatus: isPaid ? '결제완료' : '결제대기',
         orderIsPaid: isPaid,
+        orderId: insertOrderInfoDto.orderId,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;
@@ -158,8 +169,33 @@ export class OrderService {
     }
   }
 
-  async updateOrder(orderId: number): Promise<boolean> {
-    return;
+  async updateOrderIsPaid(orderId: string, status: string): Promise<boolean> {
+    try {
+      let orderStatus = '결제대기';
+      switch (status) {
+        case 'DONE':
+          orderStatus = '결제완료';
+          break;
+        case 'CANCELED':
+          orderStatus = '주문취소';
+          break;
+        case 'PARTIAL_CANCELED':
+          orderStatus = '입금부분취소';
+          break;
+      }
+      await this.orderInfoRepository
+        .createQueryBuilder()
+        .update(OrderInfoEntity)
+        .set({
+          orderIsPaid: status === 'DONE',
+          orderStatus: orderStatus,
+        })
+        .where('orderId = :orderId', { orderId: orderId })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+    return true;
   }
 
   async getOrderItemInfo(orderId: number) {
@@ -174,19 +210,27 @@ export class OrderService {
       .getMany();
   }
 
-  async checkCustomerOrderItem(productId: number, customerId: number): Promise<Boolean> {
-    const orderList = await this.orderInfoRepository.find({customerId: customerId});
-    const product = await this.productInfoRepository.findOne({id: productId});
-    
+  async checkCustomerOrderItem(
+    productId: number,
+    customerId: number,
+  ): Promise<Boolean> {
+    const orderList = await this.orderInfoRepository.find({
+      customerId: customerId,
+    });
+    const product = await this.productInfoRepository.findOne({ id: productId });
+
     let is_purchased = false;
-    for(let i=0; i<orderList.length; i++) {
-      const orderItemCount = await this.orderItemInfoRepository.count({ product: product, orderId: orderList[i].id});
+    for (let i = 0; i < orderList.length; i++) {
+      const orderItemCount = await this.orderItemInfoRepository.count({
+        product: product,
+        orderId: orderList[i].id,
+      });
       if (orderItemCount != 0) {
         is_purchased = true;
         break;
       }
     }
-  
+
     return is_purchased;
-  } 
+  }
 }

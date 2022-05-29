@@ -101,6 +101,15 @@ export class SelectOrderInfoDto {
   orderIsPaid: boolean;
 
   @ApiProperty({
+    description: '토스 결제 주문 ID',
+    required: false,
+    default: '',
+  })
+  @IsNotEmpty()
+  @IsString()
+  orderId: string;
+
+  @ApiProperty({
     description: '생성날짜',
     example: '2022-03-29 11:49:02.286',
     required: true,

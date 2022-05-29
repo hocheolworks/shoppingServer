@@ -7,6 +7,8 @@ import OrderItemInfoEntity from './entities/orderItem.entity';
 import ProductInfoEntity from 'src/product/entities/product.entity';
 import CartItemInfoEntity from 'src/customer/entities/cartItem.entity';
 import { CustomerModule } from 'src/customer/customer.module';
+import { PaymentService } from './payment.service';
+import PaymentHistoryEntity from './entities/payment-history.entity';
 
 @Module({
   imports: [
@@ -15,10 +17,12 @@ import { CustomerModule } from 'src/customer/customer.module';
       OrderItemInfoEntity,
       ProductInfoEntity,
       CartItemInfoEntity,
+      PaymentHistoryEntity,
     ]),
     CustomerModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService],
+  providers: [OrderService, PaymentService],
+  exports: [OrderService],
 })
 export class OrderModule {}

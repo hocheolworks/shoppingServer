@@ -1,20 +1,19 @@
+import { NewCustomerInfo } from './../customer/customer.interface';
+import { VerifyPhoneDto } from './../customer/dtos/verify-phone.dto';
 import { response } from 'express';
 import { LoginRequestDto } from './dtos/login.request.dto';
 import { Repository } from 'typeorm';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
-import { InternalServerErrorException } from '@nestjs/common';
 import * as crypto from 'crypto';
-
-const SMS_ID = process.env.SMS_ID;
-const SMS_KEY = process.env.SMS_KEY;
-const ACCESS_KEY = process.env.IAM_ACCESS_KEY;
-const SECRET_KEY = process.env.IAM_SECRET_KEY;
-const SMS_SENDER = process.env.SMS_SENDER;
 
 @Injectable()
 export class AuthService {
@@ -45,47 +44,58 @@ export class AuthService {
     return signature.toString(); // toString()이 없었어서 에러가 자꾸 났었는데, 반드시 고쳐야함.
   }
 
-  async sendSMS(phoneNumber: string) {
-    const body = {
-      type: 'SMS',
-      contentType: 'COMM',
-      countryCode: '82',
-      from: process.env.SMS_SENDER,
-      content: `메롱~~~~~.`,
-      messages: [
-        {
-          to: phoneNumber,
+  async sendSMS(verifyPhoneDto: VerifyPhoneDto) {
+    const { customerPassword, customerPassword2, customerEmail } =
+      verifyPhoneDto;
+
+    const customerPhoneNumber = verifyPhoneDto.customerPhoneNumber;
+    if (customerPhoneNumber.length >= 12) {
+      throw new BadRequestException(
+        '- 를 제외하고 입력해주세요! ex) 01012345678',
+      );
+    }
+
+    const verifyNumber = verifyPhoneDto.verifyNumber;
+
+    if (customerPassword === customerPassword2) {
+      if (await this.customerInfoRepository.count({ customerPhoneNumber })) {
+        throw new BadRequestException('이미 가입된 회원입니다.');
+      }
+      if (await this.customerInfoRepository.count({ customerEmail })) {
+        throw new BadRequestException('중복된 아이디(이메일) 입니다.');
+      }
+
+      const body = {
+        type: 'SMS',
+        contentType: 'COMM',
+        countryCode: '82',
+        from: process.env.SMS_SENDER,
+        content: `일조유통 인증번호: ${verifyNumber} \n정확하게 입력해주세요!`,
+        messages: [
+          {
+            to: customerPhoneNumber,
+          },
+        ],
+      };
+      const options = {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'x-ncp-apigw-timestamp': Date.now().toString(),
+          'x-ncp-iam-access-key': process.env.IAM_ACCESS_KEY,
+          'x-ncp-apigw-signature-v2': this.makeSignature(),
         },
-      ],
-    };
-    const options = {
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'x-ncp-apigw-timestamp': Date.now().toString(),
-        'x-ncp-iam-access-key': process.env.IAM_ACCESS_KEY,
-        'x-ncp-apigw-signature-v2': this.makeSignature(),
-      },
-    };
-    console.log(body);
-    console.log(options);
-    console.log(
-      `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
-    );
-    await axios
-      .post(
+      };
+
+      await axios.post(
         `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
         body,
         options,
-      )
-      .then(async (res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.error(err.response.data);
-        throw new InternalServerErrorException();
-      });
+      );
 
-    return options.headers;
+      return body;
+    } else {
+      throw new BadRequestException('비밀번호가 확인용 비밀번호와 다릅니다.');
+    }
   }
 
   async jwtLogIn(loginRequestDto: LoginRequestDto) {
@@ -184,8 +194,35 @@ export class AuthService {
 
         return response;
       } else {
-        return false;
+        const token = accessToken;
+        const newCustomerInfo: NewCustomerInfo = {
+          customerEmail: customerInfo.data.kakao_account.email,
+          customerPassword: null,
+          customerName: null,
+          customerPhoneNumber: null,
+          signupVerifyToken: null,
+        };
+        await this.customerInfoRepository.insert(newCustomerInfo);
+        const customer = await this.customerInfoRepository.findOne({
+          customerEmail: email,
+        });
+
+        const response = {
+          id: customer.id,
+          customerEmail: customer.customerEmail,
+          customerName: customer.customerName,
+          customerPhoneNumber: customer.customerPhoneNumber,
+          customerPostIndex: customer.customerPostIndex,
+          customerAddress: customer.customerAddress,
+          customerAddressDetail: customer.customerAddressDetail,
+          customerRole: customer.customerRole,
+          token: token,
+        };
+
+        return response;
       }
+    } else {
+      return false;
     }
   }
 }

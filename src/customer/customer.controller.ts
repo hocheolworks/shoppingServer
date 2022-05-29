@@ -1,3 +1,4 @@
+import { VerifyPhoneDto } from './dtos/verify-phone.dto';
 import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import { LoginRequestDto } from './../auth/dtos/login.request.dto';
 import { AuthService } from './../auth/auth.service';
@@ -28,9 +29,9 @@ export class CustomerController {
     private readonly authService: AuthService,
   ) {}
 
-  @Post('/temp/test')
-  async verifyPhone(): Promise<any> {
-    return await this.authService.sendSMS('01073830644');
+  @Post('/verify-phone')
+  async verifyPhone(@Body() verifyPhoneDto: VerifyPhoneDto): Promise<any> {
+    return await this.authService.sendSMS(verifyPhoneDto);
   }
 
   @Get('/all')

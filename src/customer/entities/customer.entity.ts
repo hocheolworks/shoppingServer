@@ -10,13 +10,13 @@ class CustomerInfoEntity extends CoreEntity {
   @Column()
   customerEmail: string;
 
-  @Column()
+  @Column({ nullable: true })
   customerName: string;
 
-  @Column()
+  @Column({ nullable: true })
   customerPassword: string;
 
-  @Column()
+  @Column({ nullable: true })
   customerPhoneNumber: string;
 
   @Column({ nullable: true })

@@ -7,6 +7,7 @@ import { CreateCustomerInfoDto } from './dtos/create-customer-info.dto';
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
@@ -270,6 +271,25 @@ export class CustomerService {
       .execute();
 
     return await this.getCartItems(customerId);
+  }
+
+  async mergeCart(
+    customerId: number,
+    inputCartItemsData: InputCartItemInfoDto[],
+  ): Promise<boolean> {
+    try {
+      await this.cartItemInfoRepository.upsert(
+        inputCartItemsData.map((value) => ({
+          customerId: customerId,
+          productId: value.productId,
+          productCount: value.productCount,
+        })),
+        ['customerId', 'productId'],
+      );
+    } catch (err: any) {
+      throw new InternalServerErrorException(err);
+    }
+    return true;
   }
 
   async getCustomerList() {

@@ -122,4 +122,12 @@ export class CustomerController {
   ): Promise<SelectCartItemInfoDto[]> {
     return await this.customerService.clearCart(customerId);
   }
+
+  @Put('/:customerId/cart/all')
+  async mergeCart(
+    @Param('customerId') customerId,
+    @Body() inputCartItemsData: InputCartItemInfoDto[],
+  ): Promise<boolean> {
+    return await this.customerService.mergeCart(customerId, inputCartItemsData);
+  }
 }

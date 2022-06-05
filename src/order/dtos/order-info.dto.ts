@@ -10,8 +10,8 @@ import {
 } from 'class-validator';
 
 class CartItemForInsertOrder {
-  id: number;
-  customerId: number;
+  id?: number;
+  customerId?: number;
   productId: number;
   productCount: number;
 }

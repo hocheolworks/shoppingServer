@@ -4,15 +4,6 @@ import ProductInfoEntity from 'src/product/entities/product.entity';
 import CustomerInfoEntity from '../entities/customer.entity';
 
 export class SelectCartItemInfoDto {
-  @ApiProperty({
-    description: '장바구니 목록 id',
-    example: 1,
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  id: number;
-
   //   @ApiProperty({
   //     description: '주문 고객 id',
   //     example: 10,

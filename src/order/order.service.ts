@@ -114,7 +114,11 @@ export class OrderService {
           insertOrder,
           (response.data as PaymentHistoryDto).method !== '가상계좌',
         );
-        await this.customerService.clearCart(customerId);
+
+        if (!tossOrderId.includes('NM')) {
+          await this.customerService.clearCart(customerId);
+        }
+
         await this.paymentService.insertPaymentHistory(
           response.data as PaymentHistoryDto,
         );
@@ -134,7 +138,10 @@ export class OrderService {
   ): Promise<SelectOrderInfoDto> {
     try {
       const newOrderInfo = this.orderInfoRepository.create({
-        customerId: insertOrderInfoDto.customerId,
+        customerId:
+          insertOrderInfoDto.customerId === -1
+            ? null
+            : insertOrderInfoDto.customerId,
         orderCustomerName: insertOrderInfoDto.orderCustomerName,
         orderPostIndex: insertOrderInfoDto.orderPostIndex,
         orderAddress: insertOrderInfoDto.orderAddress,
@@ -232,5 +239,27 @@ export class OrderService {
     }
 
     return is_purchased;
+  }
+  
+  async searchNonMembersOrders(
+    orderId: number,
+    customerName: string,
+    customerPhoneNumber: string,
+  ) : Promise<any> {
+    
+    try {
+      const order = await this.orderInfoRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem_info')
+      .leftJoinAndSelect('orderItem_info.product', 'product_info')
+      .where('order.id = :id', { id: orderId })
+      .andWhere('order.orderCustomerName = :customerName', {customerName : customerName})
+      .andWhere('order.orderPhoneNumber = :customerPhoneNumber', {customerPhoneNumber: customerPhoneNumber})
+      .getOne();
+      return order
+    }
+    catch {
+      return -1
+    }
   }
 }

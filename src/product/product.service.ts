@@ -294,7 +294,7 @@ export class ProductService {
     return response;
   }
 
-  async uploadImage(files) {
-    return 'SUCESS';
+  uploadImage(file: any): string {
+    return 'SUCCESS';
   }
 }

@@ -70,7 +70,7 @@ export class AuthService {
         contentType: 'COMM',
         countryCode: '82',
         from: process.env.SMS_SENDER,
-        content: `일조유통 인증번호: ${verifyNumber} \n정확하게 입력해주세요!`,
+        content: `진솔유통 인증번호: ${verifyNumber} \n정확하게 입력해주세요!`,
         messages: [
           {
             to: customerPhoneNumber,
@@ -86,11 +86,17 @@ export class AuthService {
         },
       };
 
-      await axios.post(
+      console.log(options);
+
+      console.log(body);
+
+      const result = await axios.post(
         `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
         body,
         options,
       );
+
+      console.log(result);
 
       return body;
     } else {

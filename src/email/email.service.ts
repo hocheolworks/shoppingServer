@@ -46,7 +46,7 @@ export class EmailService {
         <tr>
             <td style="background-color: #ffffff; padding: 40px 30px 40px 30px; text-align: center">
                 <h3>안녕하세요, ${sendEmailDto.customerName}고객님</h3>
-                <p>일조유통에 가입해 주셔서 진심으로 감사합니다.</p>
+                <p>진솔유통에 가입해 주셔서 진심으로 감사합니다.</p>
                 <p>아래 인증번호를 가입 화면에 입력해주시면 회원 가입이 완료됩니다. </p>
                 <span>인증번호 : ${verifyNumber}</span>
               </form>

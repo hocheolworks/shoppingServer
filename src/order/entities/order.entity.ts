@@ -45,13 +45,14 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({ type: 'varchar', length: 128, comment: '토스 결제 주문 ID' })
   orderId: string;
-  @Column()
+
+  @Column({ type: 'int', comment: '[FK] 회원 id', nullable: true })
   customerId: number;
 
   @ManyToOne(() => CustomerInfoEntity, (customer) => customer.orders, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    nullable: false,
+    nullable: true,
   })
   customer: CustomerInfoEntity;
 

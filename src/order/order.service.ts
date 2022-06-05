@@ -114,7 +114,11 @@ export class OrderService {
           insertOrder,
           (response.data as PaymentHistoryDto).method !== '가상계좌',
         );
-        await this.customerService.clearCart(customerId);
+
+        if (!tossOrderId.includes('NM')) {
+          await this.customerService.clearCart(customerId);
+        }
+
         await this.paymentService.insertPaymentHistory(
           response.data as PaymentHistoryDto,
         );
@@ -134,7 +138,10 @@ export class OrderService {
   ): Promise<SelectOrderInfoDto> {
     try {
       const newOrderInfo = this.orderInfoRepository.create({
-        customerId: insertOrderInfoDto.customerId,
+        customerId:
+          insertOrderInfoDto.customerId === -1
+            ? null
+            : insertOrderInfoDto.customerId,
         orderCustomerName: insertOrderInfoDto.orderCustomerName,
         orderPostIndex: insertOrderInfoDto.orderPostIndex,
         orderAddress: insertOrderInfoDto.orderAddress,

@@ -220,19 +220,20 @@ export class ProductController {
     return this.productService.selectReview(productId);
   }
 
-  // @UseInterceptors(
-  //   FilesInterceptor('files', 3, {
-  //     storage: multerS3({
-  //       s3: s3,
-  //       bucket: process.env.AWS_S3_BUCKET_NAME,
-  //       acl: 'public-read',
-  //       key: function (req, file, cb) {
-  //         cb(null, file.originalname);
-  //       },
-  //     }),
-  //   }),
-  // )
-  // async uploadImage(@UploadedFiles() files: Express.Multer.File) {
-  //   return this.productService.uploadImage(files);
-  // }
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: multerS3({
+        s3: s3,
+        bucket: 'iljo-product',
+        acl: 'public-read',
+        key: function (req, file, cb) {
+          cb(null, file.originalname);
+        },
+      }),
+    }),
+  )
+  @Post('/detail/images')
+  uploadImage(@UploadedFile() file: any): string {
+    return file.location;
+  }
 }

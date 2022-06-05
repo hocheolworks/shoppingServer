@@ -247,13 +247,19 @@ export class OrderService {
     customerPhoneNumber: string,
   ) : Promise<any> {
     
-    return this.orderInfoRepository
-    .createQueryBuilder('order')
-    .leftJoinAndSelect('order.orderItems', 'orderItem_info')
-    .leftJoinAndSelect('orderItem_info.product', 'product_info')
-    .where('order.id = :id', { id: orderId })
-    .andWhere('order.orderCustomerName = :customerName', {customerName : customerName})
-    .andWhere('order.orderPhoneNumber = :customerPhoneNumber', {customerPhoneNumber: customerPhoneNumber})
-    .getOne();
+    try {
+      const order = await this.orderInfoRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect('order.orderItems', 'orderItem_info')
+      .leftJoinAndSelect('orderItem_info.product', 'product_info')
+      .where('order.id = :id', { id: orderId })
+      .andWhere('order.orderCustomerName = :customerName', {customerName : customerName})
+      .andWhere('order.orderPhoneNumber = :customerPhoneNumber', {customerPhoneNumber: customerPhoneNumber})
+      .getOne();
+      return order
+    }
+    catch {
+      return -1
+    }
   }
 }

@@ -75,7 +75,6 @@ export class ProductController {
     @UploadedFile() file: any,
     @Body() product,
   ): Promise<SelectProductInfoDto[]> {
-    console.log(file);
     const inputProductDto = new InputProductInfoDtd();
     inputProductDto.productName = product.productName;
     inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
@@ -221,7 +220,7 @@ export class ProductController {
   }
 
   @UseInterceptors(
-    FileInterceptor('file', {
+    FilesInterceptor('files', 10, {
       storage: multerS3({
         s3: s3,
         bucket: 'iljo-product',
@@ -233,7 +232,7 @@ export class ProductController {
     }),
   )
   @Post('/detail/images')
-  uploadImage(@UploadedFile() file: any): string {
-    return file.location;
+  uploadImage(@UploadedFiles() files: Array<any>): Array<string> {
+    return files.map((val) => val.location);
   }
 }

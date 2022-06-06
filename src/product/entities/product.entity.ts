@@ -10,7 +10,7 @@ class ProductInfoEntity extends CoreEntity {
   @Column({ type: 'varchar', length: '128', comment: '상품 명' })
   productName: string;
 
-  @Column({ type: 'varchar', length: '512', comment: '상품 설명' })
+  @Column({ type: 'text', comment: '상품 설명' })
   productDescription: string;
 
   @Column({ type: 'int', comment: '상품 가격' })
@@ -19,7 +19,7 @@ class ProductInfoEntity extends CoreEntity {
   @Column({ type: 'int', comment: '최소 수량' })
   productMinimumEA: number;
 
-  @Column({ type: 'varchar', length: '128', comment: '상품 이미지 파일경로' })
+  @Column({ type: 'varchar', length: '512', comment: '상품 이미지 파일경로' })
   productImageFilepath: string;
 
   @OneToMany(() => ReviewInfoEntity, (review) => review.product)

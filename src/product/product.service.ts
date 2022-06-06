@@ -121,7 +121,7 @@ export class ProductService {
         .getMany();
     } catch (err: any) {
       console.log(err);
-      return null;
+      throw new InternalServerErrorException(err);
     }
   }
 

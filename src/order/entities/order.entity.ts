@@ -23,7 +23,7 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({
     type: 'varchar',
-    length: 64,
+    length: 256,
     comment: '배송 메모(50자 이내)',
     default: '',
   })

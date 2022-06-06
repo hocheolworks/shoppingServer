@@ -11,6 +11,7 @@ import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import { OrderService } from './order.service';
 import { PaymentService } from './payment.service';
 import { VirtualAccountWebhookBody } from 'src/common/types/types';
+import OrderInfoEntity from './entities/order.entity';
 
 @Controller('order')
 export class OrderController {
@@ -75,5 +76,17 @@ export class OrderController {
   async webhookVirtualAccount(@Body() body: VirtualAccountWebhookBody) {
     await this.paymentService.receiveVirtualAccountWebhook(body);
     await this.orderService.updateOrderIsPaid(body.orderId, body.status);
+  }
+  
+  @Post('/nonMember/orderList')
+  async getNonMembersOrder(
+    @Body('orderId') orderId,
+    @Body('customerName') customerName,
+    @Body('customerPhoneNumber') customerPhoneNumber,
+  ) : Promise<any> {
+    if (isNaN(orderId)){
+      return -1;
+    }
+    return await this.orderService.searchNonMembersOrders(parseInt(orderId), customerName, customerPhoneNumber);
   }
 }

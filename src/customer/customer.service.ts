@@ -49,9 +49,9 @@ export class CustomerService {
       }
 
       const registrationEmailData: SendEmailDto = {
-        from: '일조유통 iljotradingcompany@gmail.com',
+        from: '진솔유통 iljotradingcompany@gmail.com',
         to: customerEmail,
-        title: '일조유통 회원가입 확인 안내',
+        title: '진솔유통 회원가입 확인 안내',
         customerName: customerName,
       };
 

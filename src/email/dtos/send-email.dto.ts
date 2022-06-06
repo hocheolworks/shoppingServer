@@ -28,7 +28,7 @@ export class SendEmailDto {
 
   @ApiProperty({
     description: '메일 제목',
-    example: '안녕하세요, 일조유통입니다.',
+    example: '안녕하세요, 진솔유통입니다.',
     required: true,
   })
   @IsNotEmpty()

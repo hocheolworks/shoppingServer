@@ -18,14 +18,12 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesInterceptor } from '@nestjs/platform-express/multer/interceptors/files.interceptor';
-import { diskStorage } from 'multer';
 import { InputProductInfoDtd } from './dtos/input-product-info.dto';
 import { InsertProductError } from './dtos/product-error.dto';
 import { SelectProductInfoDto } from './dtos/product-info.dto';
 import { ProductService } from './product.service';
 import * as path from 'path';
 import { CustomerService } from 'src/customer/customer.service';
-import { response } from 'express';
 import { ProductReviewDto } from './dtos/product-review.dto';
 import ProductInfoEntity from './entities/product.entity';
 import ReviewInfoEntity from './entities/review.entity';
@@ -66,7 +64,13 @@ export class ProductController {
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: function (req, file, cb) {
           const extension = path.extname(file.originalname);
-          cb(null, file.originalname + Date.now().toString() + extension);
+          cb(
+            null,
+            file.originalname.replace(extension, '') +
+              '_' +
+              Date.now().toString() +
+              extension,
+          );
         },
       }),
     }),
@@ -183,11 +187,6 @@ export class ProductController {
     inputProductDto.productDescription = product.productDescription;
     inputProductDto.productPrice = parseInt(product.productPrice);
 
-    console.log(product.productName);
-    console.log(parseInt(product.productMinimumEA));
-    console.log(product.productDescription);
-    console.log(parseInt(product.productPrice));
-
     return this.productService.updateProductWithoutImage(
       productId,
       inputProductDto,
@@ -226,7 +225,14 @@ export class ProductController {
         bucket: 'iljo-product',
         acl: 'public-read',
         key: function (req, file, cb) {
-          cb(null, file.originalname);
+          const extension = path.extname(file.originalname);
+          cb(
+            null,
+            file.originalname.replace(extension, '') +
+              '_' +
+              Date.now().toString() +
+              extension,
+          );
         },
       }),
     }),

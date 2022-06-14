@@ -13,11 +13,41 @@ class ProductInfoEntity extends CoreEntity {
   @Column({ type: 'text', comment: '상품 설명' })
   productDescription: string;
 
-  @Column({ type: 'int', comment: '상품 가격' })
+  @Column({ type: 'varchar', comment: '상품 가격' })
   productPrice: number; // 단위 : 원
 
-  @Column({ type: 'int', comment: '최소 수량' })
+  @Column({ type: 'varchar', comment: '상품 가격' })
+  productPrice1: number | string; // 단위 : 원
+
+  @Column({ type: 'varchar', comment: '상품 가격' })
+  productPrice2: number | string; // 단위 : 원
+
+  @Column({ type: 'varchar', comment: '상품 가격' })
+  productPrice3: number | string; // 단위 : 원
+
+  @Column({ type: 'varchar', comment: '상품 가격' })
+  productPrice4: number | string; // 단위 : 원
+
+  @Column({ type: 'varchar', comment: '상품 가격' })
+  productPrice5: number | string; // 단위 : 원
+
+  @Column({ type: 'int', comment: '최소 수량', default: 0 })
   productMinimumEA: number;
+
+  @Column({ type: 'int', comment: '수량 범위', default: 0 })
+  productEA1: number;
+
+  @Column({ type: 'int', comment: '수량 범위', default: 0 })
+  productEA2: number;
+
+  @Column({ type: 'int', comment: '수량 범위', default: 0 })
+  productEA3: number;
+
+  @Column({ type: 'int', comment: '수량 범위', default: 0 })
+  productEA4: number;
+
+  @Column({ type: 'int', comment: '수량 범위', default: 0 })
+  productEA5: number;
 
   @Column({ type: 'varchar', length: '512', comment: '상품 이미지 파일경로' })
   productImageFilepath: string;

@@ -83,4 +83,6 @@ export class InputCartItemInfoDto {
   @IsNotEmpty()
   @IsNumber()
   productCount: number;
+
+  productPrice: number;
 }

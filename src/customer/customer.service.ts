@@ -219,6 +219,7 @@ export class CustomerService {
       .update(CartItemInfoEntity)
       .set({
         productCount: inputCartItemData.productCount,
+        productPrice: inputCartItemData.productPrice,
       })
       .where('customerId = :customerId', { customerId: customerId })
       .andWhere('productId = :productId', {
@@ -241,6 +242,7 @@ export class CustomerService {
         customerId: customerId,
         productId: inputCartItemData.productId,
         productCount: inputCartItemData.productCount,
+        productPrice: inputCartItemData.productPrice,
       })
       .execute();
 

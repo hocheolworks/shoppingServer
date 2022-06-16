@@ -44,6 +44,7 @@ export class OrderController {
         s3: s3,
         bucket: 'iljo-product',
         acl: 'public-read',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
         key: function (req, file, cb) {
           const extension = path.extname(file.originalname);
           cb(
@@ -63,7 +64,7 @@ export class OrderController {
     if (file) {
       return file.location;
     } else {
-      return '';
+      return 'no file';
     }
   }
 

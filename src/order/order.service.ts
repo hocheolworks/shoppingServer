@@ -15,6 +15,15 @@ import { CustomerService } from 'src/customer/customer.service';
 import { TossPaymentResponse } from 'src/common/types/types';
 import { PaymentService } from 'src/order/payment.service';
 import { PaymentHistoryDto } from 'src/order/dtos/payment-history.dto';
+import * as AWS from 'aws-sdk';
+import { getLocation } from 'src/common/functions/functions';
+const s3 = new AWS.S3();
+
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
 
 function TossPaymentRequest(options, data) {
   return new Promise<TossPaymentResponse>((resolve, reject) => {
@@ -123,6 +132,36 @@ export class OrderService {
           response.data as PaymentHistoryDto,
         );
       } else {
+        // 결제 실패
+        // 디자인 파일 삭제
+        if (insertOrder.orderDesignFile) {
+          const designFilepath = decodeURI(
+            getLocation(insertOrder.orderDesignFile),
+          );
+
+          const params: AWS.S3.DeleteObjectsRequest = {
+            Bucket: 'iljo-product',
+            Delete: { Objects: [{ Key: designFilepath }] },
+          };
+
+          s3.deleteObjects(params, (err, data) => {
+            if (err) {
+              switch (err.code) {
+                case 'ENOENT':
+                  console.log('파일이 존재하지 않습니다.');
+                  break;
+                default:
+                  console.log(err);
+                  break;
+              }
+              return;
+            } else {
+              console.log(data);
+            }
+            console.log(`Successfully remove ${designFilepath}`);
+          });
+        }
+
         console.log(response.data);
         throw new HttpException(response.data, response.status);
       }

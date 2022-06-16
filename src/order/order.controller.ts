@@ -84,9 +84,7 @@ export class OrderController {
     @Body('customerName') customerName,
     @Body('customerPhoneNumber') customerPhoneNumber,
   ) : Promise<any> {
-    if (isNaN(orderId)){
-      return -1;
-    }
-    return await this.orderService.searchNonMembersOrders(parseInt(orderId), customerName, customerPhoneNumber);
+    console.log(orderId);
+    return await this.orderService.searchNonMembersOrders(orderId, customerName, customerPhoneNumber);
   }
 }

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { cp } from 'fs';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import CustomerInfoEntity from 'src/customer/entities/customer.entity';
 import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
@@ -58,6 +59,9 @@ class OrderInfoEntity extends CoreEntity {
 
   @OneToMany(() => OrderItemInfoEntity, (orderItem) => orderItem.order)
   orderItems: OrderItemInfoEntity[];
+
+  @Column({ type: 'varchar', length: 512, comment: '디자인 파일', default: '' })
+  orderDesignFile: string;
 }
 
 export default OrderInfoEntity;

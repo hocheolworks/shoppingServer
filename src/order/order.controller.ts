@@ -6,12 +6,25 @@ import {
   InternalServerErrorException,
   Param,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import { OrderService } from './order.service';
 import { PaymentService } from './payment.service';
 import { VirtualAccountWebhookBody } from 'src/common/types/types';
 import OrderInfoEntity from './entities/order.entity';
+import * as path from 'path';
+import * as multerS3 from 'multer-s3';
+import * as AWS from 'aws-sdk';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+const s3 = new AWS.S3();
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
 
 @Controller('order')
 export class OrderController {
@@ -23,6 +36,35 @@ export class OrderController {
   @Get('/all')
   async getOrderList() {
     return await this.orderService.getOrderList();
+  }
+
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: multerS3({
+        s3: s3,
+        bucket: 'iljo-product',
+        acl: 'public-read',
+        key: function (req, file, cb) {
+          const extension = path.extname(file.originalname);
+          cb(
+            null,
+            'design_' +
+              file.originalname.replace(extension, '') +
+              '_' +
+              Date.now().toString() +
+              extension,
+          );
+        },
+      }),
+    }),
+  )
+  @Post('/design')
+  saveDesignFile(@UploadedFile() file: any): string {
+    if (file) {
+      return file.location;
+    } else {
+      return '';
+    }
   }
 
   @Post('/payment')
@@ -77,16 +119,20 @@ export class OrderController {
     await this.paymentService.receiveVirtualAccountWebhook(body);
     await this.orderService.updateOrderIsPaid(body.orderId, body.status);
   }
-  
+
   @Post('/nonMember/orderList')
   async getNonMembersOrder(
     @Body('orderId') orderId,
     @Body('customerName') customerName,
     @Body('customerPhoneNumber') customerPhoneNumber,
-  ) : Promise<any> {
-    if (isNaN(orderId)){
+  ): Promise<any> {
+    if (isNaN(orderId)) {
       return -1;
     }
-    return await this.orderService.searchNonMembersOrders(parseInt(orderId), customerName, customerPhoneNumber);
+    return await this.orderService.searchNonMembersOrders(
+      parseInt(orderId),
+      customerName,
+      customerPhoneNumber,
+    );
   }
 }

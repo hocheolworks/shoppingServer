@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsPhoneNumber,
   IsPostalCode,
+  isString,
   IsString,
 } from 'class-validator';
 
@@ -160,12 +161,20 @@ export class InsertOrderInfoDto extends SelectOrderInfoDto {
   customerId: number;
 
   @ApiProperty({
-    description: '배송 메오',
+    description: '주문 요청 사항',
     example: '문앞에 놔주세요',
     required: false,
   })
   @IsString()
   orderMemo: string | null;
+
+  @ApiProperty({
+    description: '디자인 파일',
+    example: 'abc.pdf',
+    required: false,
+  })
+  @IsString()
+  orderDesignFile: string | null;
 
   cart: Array<CartItemForInsertOrder>;
 }

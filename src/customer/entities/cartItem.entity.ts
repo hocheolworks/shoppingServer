@@ -41,6 +41,9 @@ class CartItemInfoEntity {
   @Column({ type: 'int' })
   productCount: number;
 
+  @Column({ type: 'int', default: 0 })
+  productPrice: number;
+
   @ApiProperty({
     description: '생성일시',
   })

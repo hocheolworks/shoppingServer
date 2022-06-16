@@ -243,7 +243,7 @@ export class OrderService {
   }
 
   async searchNonMembersOrders(
-    orderId: number,
+    orderId: string,
     customerName: string,
     customerPhoneNumber: string,
   ): Promise<any> {
@@ -252,7 +252,7 @@ export class OrderService {
         .createQueryBuilder('order')
         .leftJoinAndSelect('order.orderItems', 'orderItem_info')
         .leftJoinAndSelect('orderItem_info.product', 'product_info')
-        .where('order.id = :id', { id: orderId })
+        .where('order.orderId = :id', { id: 'order-NM' + orderId })
         .andWhere('order.orderCustomerName = :customerName', {
           customerName: customerName,
         })

@@ -91,6 +91,7 @@ export class CustomerController {
     @Param('customerId') customerId,
     @Body() inputCartItemData: InputCartItemInfoDto,
   ): Promise<SelectCartItemInfoDto[]> {
+    console.log(inputCartItemData);
     return await this.customerService.updateCartItem(
       customerId,
       inputCartItemData,

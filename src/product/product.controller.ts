@@ -82,8 +82,18 @@ export class ProductController {
     const inputProductDto = new InputProductInfoDtd();
     inputProductDto.productName = product.productName;
     inputProductDto.productMinimumEA = parseInt(product.productMinimumEA);
+    inputProductDto.productEA1 = parseInt(product.productEA1);
+    inputProductDto.productEA2 = parseInt(product.productEA2);
+    inputProductDto.productEA3 = parseInt(product.productEA3);
+    inputProductDto.productEA4 = parseInt(product.productEA4);
+    inputProductDto.productEA5 = parseInt(product.productEA5);
     inputProductDto.productDescription = product.productDescription;
     inputProductDto.productPrice = parseInt(product.productPrice);
+    inputProductDto.productPrice1 = product.productPrice1;
+    inputProductDto.productPrice2 = product.productPrice2;
+    inputProductDto.productPrice3 = product.productPrice3;
+    inputProductDto.productPrice4 = product.productPrice4;
+    inputProductDto.productPrice5 = product.productPrice5;
     inputProductDto.productImageFilepath = file.location;
 
     console.log(inputProductDto);

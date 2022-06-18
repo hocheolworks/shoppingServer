@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
   Param,
   Post,
   UploadedFile,
@@ -13,11 +12,11 @@ import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import { OrderService } from './order.service';
 import { PaymentService } from './payment.service';
 import { VirtualAccountWebhookBody } from 'src/common/types/types';
-import OrderInfoEntity from './entities/order.entity';
 import * as path from 'path';
 import * as multerS3 from 'multer-s3';
 import * as AWS from 'aws-sdk';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 
 const s3 = new AWS.S3();
 AWS.config.update({
@@ -133,5 +132,15 @@ export class OrderController {
       customerName,
       customerPhoneNumber,
     );
+  }
+
+  @Post('/taxBillInfo')
+  async insertTaxBillInfo(@Body() taxBillInfoDto: Partial<TaxBillInfoDto>) {
+    return await this.orderService.insertTaxBillInfo(taxBillInfoDto);
+  }
+
+  @Get('/:oid/taxBillInfo/')
+  async selectTaxBillInfoByOrderId(@Param('oid') oid: number) {
+    return await this.orderService.selectTaxBillInfoByOrderId(oid);
   }
 }

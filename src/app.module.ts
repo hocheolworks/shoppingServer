@@ -16,6 +16,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
 import PaymentHistoryEntity from './order/entities/payment-history.entity';
+import TaxBillInfoEntity from './order/entities/tax-bill-info.entity';
 
 /**
  * ENV 설정
@@ -41,6 +42,7 @@ const envFilePath = 'envs/.env.dev';
         OrderItemInfoEntity,
         CartItemInfoEntity,
         PaymentHistoryEntity,
+        TaxBillInfoEntity,
       ],
       synchronize: true,
       autoLoadEntities: true,

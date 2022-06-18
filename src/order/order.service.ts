@@ -17,6 +17,8 @@ import { PaymentService } from 'src/order/payment.service';
 import { PaymentHistoryDto } from 'src/order/dtos/payment-history.dto';
 import * as AWS from 'aws-sdk';
 import { getLocation } from 'src/common/functions/functions';
+import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
+import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -63,6 +65,9 @@ export class OrderService {
 
     @InjectRepository(ProductInfoEntity)
     private readonly productInfoRepository: Repository<ProductInfoEntity>,
+
+    @InjectRepository(TaxBillInfoEntity)
+    private readonly taxBillInfoInfoRepository: Repository<TaxBillInfoEntity>,
 
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
@@ -192,6 +197,7 @@ export class OrderService {
         orderIsPaid: isPaid,
         orderId: insertOrderInfoDto.orderId,
         orderDesignFile: insertOrderInfoDto.orderDesignFile,
+        isTaxBill: insertOrderInfoDto.isTaxBill,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;
@@ -303,5 +309,21 @@ export class OrderService {
     } catch {
       return -1;
     }
+  }
+
+  async insertTaxBillInfo(taxBillInfoDto: Partial<TaxBillInfoDto>) {
+    try {
+      await this.taxBillInfoInfoRepository.save(taxBillInfoDto);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+  }
+  async selectTaxBillInfoByOrderId(oid: number) {
+    const order = await this.orderInfoRepository.findOne({ id: oid });
+    return await this.taxBillInfoInfoRepository.findOne({
+      where: {
+        orderId: order.orderId,
+      },
+    });
   }
 }

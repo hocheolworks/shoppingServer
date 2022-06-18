@@ -9,6 +9,7 @@ import CartItemInfoEntity from 'src/customer/entities/cartItem.entity';
 import { CustomerModule } from 'src/customer/customer.module';
 import { PaymentService } from './payment.service';
 import PaymentHistoryEntity from './entities/payment-history.entity';
+import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import PaymentHistoryEntity from './entities/payment-history.entity';
       ProductInfoEntity,
       CartItemInfoEntity,
       PaymentHistoryEntity,
+      TaxBillInfoEntity,
     ]),
     CustomerModule,
   ],

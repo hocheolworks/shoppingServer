@@ -62,6 +62,9 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({ type: 'varchar', length: 512, comment: '디자인 파일', default: '' })
   orderDesignFile: string;
+
+  @Column({ type: 'boolean', comment: '세금계산서 여부', default: false })
+  isTaxBill: boolean;
 }
 
 export default OrderInfoEntity;

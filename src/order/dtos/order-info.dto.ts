@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDate,
   IsEmail,
   IsNotEmpty,
@@ -109,6 +110,16 @@ export class SelectOrderInfoDto {
   @IsNotEmpty()
   @IsString()
   orderId: string;
+
+  @ApiProperty({
+    description: '세금계산서 여부',
+    example: true,
+    required: true,
+    default: false,
+  })
+  @IsNotEmpty()
+  @IsBoolean()
+  isTaxBill: boolean;
 
   @ApiProperty({
     description: '생성날짜',

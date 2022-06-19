@@ -297,7 +297,7 @@ export class OrderService {
         .createQueryBuilder('order')
         .leftJoinAndSelect('order.orderItems', 'orderItem_info')
         .leftJoinAndSelect('orderItem_info.product', 'product_info')
-        .where('order.orderId = :id', { id: 'order-NM' + orderId })
+        .where('order.orderId = :id', { id: 'order-' + orderId })
         .andWhere('order.orderCustomerName = :customerName', {
           customerName: customerName,
         })

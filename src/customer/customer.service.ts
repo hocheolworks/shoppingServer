@@ -285,6 +285,7 @@ export class CustomerService {
           customerId: customerId,
           productId: value.productId,
           productCount: value.productCount,
+          productPrice: value.productPrice,
         })),
         ['customerId', 'productId'],
       );

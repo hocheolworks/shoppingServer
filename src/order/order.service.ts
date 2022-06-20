@@ -108,8 +108,10 @@ export class OrderService {
       port: null,
       path: `/v1/payments/${paymentKey}`,
       headers: {
-        Authorization:
-          'Basic dGVzdF9za183WFpZa0tMNE1yallwZ1pvRFlvVjB6SndsRVdSOg==',
+        Authorization: `Basic ${Buffer.from(
+          process.env.TOSS_SECRET_KEY + ':',
+          'utf8',
+        ).toString('base64')}`,
         'Content-Type': 'application/json',
       },
     };

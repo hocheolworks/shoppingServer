@@ -352,4 +352,36 @@ export class ProductService {
   uploadImage(file: any): string {
     return 'SUCCESS';
   }
+
+  async deleteDetailImages(urls: string[]): Promise<boolean> {
+    const params: AWS.S3.DeleteObjectsRequest = {
+      Bucket: 'iljo-product',
+      Delete: { Objects: [] },
+    };
+    urls.forEach((val) =>
+      params.Delete.Objects.push({ Key: decodeURI(getLocation(val)) }),
+    );
+    try {
+      s3.deleteObjects(params, (err, data) => {
+        if (err) {
+          switch (err.code) {
+            case 'ENOENT':
+              console.log('파일이 존재하지 않습니다.');
+              break;
+            default:
+              console.log(err);
+              break;
+          }
+          return;
+        } else {
+          console.log(data);
+        }
+        console.log(`Successfully remove ${urls.length} files`);
+      });
+    } catch (err) {
+      console.log(err);
+      throw new InternalServerErrorException(err);
+    }
+    return true;
+  }
 }

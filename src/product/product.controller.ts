@@ -251,4 +251,9 @@ export class ProductController {
   uploadImage(@UploadedFiles() files: Array<any>): Array<string> {
     return files.map((val) => val.location);
   }
+
+  @Post('/detail/images2delete')
+  async deleteDetailImages(@Body() urls: Array<string>): Promise<boolean> {
+    return await this.productService.deleteDetailImages(urls);
+  }
 }

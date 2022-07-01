@@ -19,6 +19,7 @@ import * as AWS from 'aws-sdk';
 import { getLocation } from 'src/common/functions/functions';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
+import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -68,6 +69,9 @@ export class OrderService {
 
     @InjectRepository(TaxBillInfoEntity)
     private readonly taxBillInfoInfoRepository: Repository<TaxBillInfoEntity>,
+
+    @InjectRepository(OrderDesignFileInfoEntity)
+    private readonly orderDesignFileInfoInfoRepository: Repository<OrderDesignFileInfoEntity>,
 
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
@@ -142,14 +146,14 @@ export class OrderService {
         // 결제 실패
         // 디자인 파일 삭제
         if (insertOrder.orderDesignFile) {
-          const designFilepath = decodeURI(
-            getLocation(insertOrder.orderDesignFile),
-          );
-
           const params: AWS.S3.DeleteObjectsRequest = {
             Bucket: 'iljo-product',
-            Delete: { Objects: [{ Key: designFilepath }] },
+            Delete: { Objects: [] },
           };
+
+          insertOrder.orderDesignFile.forEach((val) =>
+            params.Delete.Objects.push({ Key: decodeURI(getLocation(val)) }),
+          );
 
           s3.deleteObjects(params, (err, data) => {
             if (err) {
@@ -165,7 +169,9 @@ export class OrderService {
             } else {
               console.log(data);
             }
-            console.log(`Successfully remove ${designFilepath}`);
+            console.log(
+              `Successfully remove ${insertOrder.orderDesignFile.length} files`,
+            );
           });
         }
 
@@ -195,14 +201,25 @@ export class OrderService {
         orderPhoneNumber: insertOrderInfoDto.orderPhoneNumber,
         orderMemo: insertOrderInfoDto.orderMemo,
         orderTotalPrice: insertOrderInfoDto.orderTotalPrice,
+        orderTotalProductsPrice: insertOrderInfoDto.orderTotalProductsPrice,
+        orderTax: insertOrderInfoDto.orderTax,
+        orderPrintFee: insertOrderInfoDto.orderPrintFee,
+        orderDeliveryFee: insertOrderInfoDto.orderDeliveryFee,
         orderStatus: isPaid ? '결제완료' : '결제대기',
         orderIsPaid: isPaid,
         orderId: insertOrderInfoDto.orderId,
-        orderDesignFile: insertOrderInfoDto.orderDesignFile,
         isTaxBill: insertOrderInfoDto.isTaxBill,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;
+
+      for (let i = 0; i < insertOrderInfoDto.orderDesignFile.length; i++) {
+        const filePath = insertOrderInfoDto.orderDesignFile[i];
+        await this.orderDesignFileInfoInfoRepository.save({
+          oId: result.id,
+          designFilePath: decodeURI(filePath),
+        });
+      }
 
       for (let i = 0; i < cart.length; i++) {
         const cartItem = cart[i];
@@ -215,6 +232,7 @@ export class OrderService {
           orderItemTotalPrice: product.productPrice * cartItem.productCount,
           order: newOrderInfo,
           product: product,
+          isPrint: cartItem.isPrint,
         });
       }
 
@@ -327,5 +345,12 @@ export class OrderService {
         orderId: order.orderId,
       },
     });
+  }
+
+  async getDesignFilepathsByOrderId(oid: number): Promise<string[]> {
+    const designFiles = await this.orderDesignFileInfoInfoRepository.find({
+      oId: oid,
+    });
+    return designFiles.map((val) => val.designFilePath);
   }
 }

@@ -24,7 +24,7 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({
     type: 'varchar',
-    length: 256,
+    length: 512,
     comment: '배송 메모(50자 이내)',
     default: '',
   })
@@ -32,6 +32,18 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({ type: 'int', comment: '주문 총 가격' })
   orderTotalPrice: number;
+
+  @Column({ type: 'int', comment: '주문 총 가격 중 상품 총 가격' })
+  orderTotalProductsPrice: number;
+
+  @Column({ type: 'int', comment: '주문 총 가격 중 부가세' })
+  orderTax: number;
+
+  @Column({ type: 'int', comment: '주문 총 가격 중 인쇄비', default: 0 })
+  orderPrintFee: number;
+
+  @Column({ type: 'int', comment: '주문 총 가격 중 배송비', default: 0 })
+  orderDeliveryFee: number;
 
   @Column({
     type: 'varchar',
@@ -60,8 +72,13 @@ class OrderInfoEntity extends CoreEntity {
   @OneToMany(() => OrderItemInfoEntity, (orderItem) => orderItem.order)
   orderItems: OrderItemInfoEntity[];
 
-  @Column({ type: 'varchar', length: 512, comment: '디자인 파일', default: '' })
-  orderDesignFile: string;
+  // @Column({
+  //   type: 'varchar',
+  //   length: 512,
+  //   comment: '디자인 파일',
+  //   default: '',
+  // })
+  // orderDesignFile: string;
 
   @Column({ type: 'boolean', comment: '세금계산서 여부', default: false })
   isTaxBill: boolean;

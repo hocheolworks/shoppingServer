@@ -28,6 +28,9 @@ class OrderItemInfoEntity extends CoreEntity {
 
   @Column({ type: 'int', comment: '상품 합계 금액' })
   orderItemTotalPrice: number;
+
+  @Column({ type: 'boolean', comment: '인쇄 여부' })
+  isPrint: boolean;
 }
 
 export default OrderItemInfoEntity;

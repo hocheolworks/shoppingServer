@@ -10,6 +10,7 @@ import { CustomerModule } from 'src/customer/customer.module';
 import { PaymentService } from './payment.service';
 import PaymentHistoryEntity from './entities/payment-history.entity';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
+import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import TaxBillInfoEntity from './entities/tax-bill-info.entity';
       CartItemInfoEntity,
       PaymentHistoryEntity,
       TaxBillInfoEntity,
+      OrderDesignFileInfoEntity,
     ]),
     CustomerModule,
   ],

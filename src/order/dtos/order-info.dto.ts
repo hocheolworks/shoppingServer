@@ -16,6 +16,7 @@ class CartItemForInsertOrder {
   customerId?: number;
   productId: number;
   productCount: number;
+  isPrint: boolean;
 }
 
 export class SelectOrderInfoDto {
@@ -81,6 +82,42 @@ export class SelectOrderInfoDto {
   @IsNotEmpty()
   @IsNumber()
   orderTotalPrice: number;
+
+  @ApiProperty({
+    description: '총 주문 금액 중 총 상품 가격',
+    example: '120000',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  orderTotalProductsPrice: number;
+
+  @ApiProperty({
+    description: '총 주문 금액 중 부가세',
+    example: '1200',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  orderTax: number;
+
+  @ApiProperty({
+    description: '총 주문 금액 중 인쇄비',
+    example: '5000',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  orderPrintFee: number;
+
+  @ApiProperty({
+    description: '총 주문 금액 중 배송비',
+    example: '5000',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  orderDeliveryFee: number;
 
   @ApiProperty({
     description: '주문 상태',
@@ -180,12 +217,11 @@ export class InsertOrderInfoDto extends SelectOrderInfoDto {
   orderMemo: string | null;
 
   @ApiProperty({
-    description: '디자인 파일',
-    example: 'abc.pdf',
+    description: '디자인 파일 경로 리스트',
+    example: '',
     required: false,
   })
-  @IsString()
-  orderDesignFile: string | null;
+  orderDesignFile: Array<string> | null;
 
   cart: Array<CartItemForInsertOrder>;
 }

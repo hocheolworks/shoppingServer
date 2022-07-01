@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
@@ -15,7 +16,7 @@ import { VirtualAccountWebhookBody } from 'src/common/types/types';
 import * as path from 'path';
 import * as multerS3 from 'multer-s3';
 import * as AWS from 'aws-sdk';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 
 const s3 = new AWS.S3();
@@ -38,7 +39,7 @@ export class OrderController {
   }
 
   @UseInterceptors(
-    FileInterceptor('file', {
+    FilesInterceptor('files', 5, {
       storage: multerS3({
         s3: s3,
         bucket: 'iljo-product',
@@ -59,12 +60,19 @@ export class OrderController {
     }),
   )
   @Post('/design')
-  saveDesignFile(@UploadedFile() file: any): string {
-    if (file) {
-      return file.location;
+  saveDesignFile(@UploadedFiles() files: Array<any>): Array<string> {
+    if (files && files.length > 0) {
+      return files.map((val) => val.location);
     } else {
-      return 'no file';
+      return [];
     }
+  }
+
+  @Get('/design/:oid')
+  async getDesignFilepathsByOrderId(
+    @Param('oid') oid: number,
+  ): Promise<Array<string>> {
+    return await this.orderService.getDesignFilepathsByOrderId(oid);
   }
 
   @Post('/payment')

@@ -31,4 +31,12 @@ export class OrderItemsDto {
   @IsNotEmpty()
   @IsNumber()
   orderItemTotalPrice: number;
+
+  @ApiProperty({
+    description: '인쇄 여부',
+    example: false,
+    required: true,
+  })
+  @IsNotEmpty()
+  isPrint: boolean;
 }

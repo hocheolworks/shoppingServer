@@ -19,6 +19,7 @@ import * as AWS from 'aws-sdk';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import { SheetRequestDto } from './dtos/sheet-request.dto';
+import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
 
 const s3 = new AWS.S3();
 AWS.config.update({
@@ -155,9 +156,12 @@ export class OrderController {
 
   @Post('/sheetRequest')
   async insertSheetRequest(
-    @Body() sheetRequestDto: Partial<SheetRequestDto>
+    @Body() params: { 
+      sheetRequest : Partial<SheetRequestDto>,
+      customerId : number,      
+      orderItems : Array<InputCartItemInfoDto>,
+    }
   ){
-    console.log(sheetRequestDto);
-    return await this.orderService.insertEstimateSheetRequest(sheetRequestDto);
+    return await this.orderService.insertEstimateSheetRequest(params);
   }
 }

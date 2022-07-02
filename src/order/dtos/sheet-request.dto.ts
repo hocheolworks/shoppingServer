@@ -88,18 +88,4 @@ export class SheetRequestDto {
     required: false,
   })
   requestMemo : string;
-
-  @ApiProperty({
-    description: '주문한 고객 id, 비회원인 경우 -1',
-    example: '11',
-    required: true,
-  })
-  customerId: number;
-
-  @ApiProperty({
-    description: '장바구니 상품 목록',
-    example: '11',
-    required: true,
-  })
-  orderItems: Array<InputCartItemInfoDto>;
 }

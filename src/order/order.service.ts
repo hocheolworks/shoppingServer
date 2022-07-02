@@ -22,6 +22,8 @@ import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
 import { SheetRequestDto } from './dtos/sheet-request.dto';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
+import EstimateOrderEntity from './entities/estimate-order.entity';
+import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -77,6 +79,9 @@ export class OrderService {
 
     @InjectRepository(EstimateSheetEntity)
     private readonly estimateSheetEntityRepository: Repository<EstimateSheetEntity>,
+    
+    @InjectRepository(EstimateOrderEntity)
+    private readonly estimateOrderEntityRepository: Repository<EstimateOrderEntity>,    
 
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
@@ -360,13 +365,22 @@ export class OrderService {
   }
 
   async insertEstimateSheetRequest(
-    sheetRequestDto: Partial<SheetRequestDto>
+    params: { 
+      sheetRequest : Partial<SheetRequestDto>,
+      customerId : number,      
+      orderItems : Array<InputCartItemInfoDto>,
+    }
   ) : Promise<any> {
 
-    const customer = await this.customerService.getCustomerInfoById(sheetRequestDto.customerId);
-    let orderItems = [];
-    
-    // TODO : DB설계 장바구니 안에꺼 어캐담음?
+    let price = 0;
+
+    // TODO : 카트에 담겨있는 물건들 + 개수 어떻게 연결시킬건지 생각
+    let item = undefined;
+    params.orderItems.map((val) => {
+      price += val.productCount * val.productPrice;
+    })
+
+    const sheetRequestDto = params.sheetRequest;
     const estimateSheet = await this.estimateSheetEntityRepository.save({
       estimateName : sheetRequestDto.newCustomerName,
       estimateEmail : sheetRequestDto.newCustomerEmail,
@@ -380,9 +394,13 @@ export class OrderService {
       estimatePrintingDraft : sheetRequestDto.printingDraft,
       estimateDesiredDate : sheetRequestDto.desiredDate,
       estimateRequestMemo : sheetRequestDto.requestMemo,
-      requestStatus : 0,
-      customer : customer,
+      
+    })
 
+    const estimateOrder = await this.estimateOrderEntityRepository.save({
+      sheet:estimateSheet,
+      orderTotalPrice : price,
+      customerId : params.customerId,
     })
 
     return 1

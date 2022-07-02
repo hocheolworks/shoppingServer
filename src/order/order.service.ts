@@ -20,6 +20,8 @@ import { getLocation } from 'src/common/functions/functions';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
+import { SheetRequestDto } from './dtos/sheet-request.dto';
+import EstimateSheetEntity from './entities/estimate-sheet.entity';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -72,6 +74,9 @@ export class OrderService {
 
     @InjectRepository(OrderDesignFileInfoEntity)
     private readonly orderDesignFileInfoInfoRepository: Repository<OrderDesignFileInfoEntity>,
+
+    @InjectRepository(EstimateSheetEntity)
+    private readonly estimateSheetEntityRepository: Repository<EstimateSheetEntity>,
 
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
@@ -352,5 +357,34 @@ export class OrderService {
       oId: oid,
     });
     return designFiles.map((val) => val.designFilePath);
+  }
+
+  async insertEstimateSheetRequest(
+    sheetRequestDto: Partial<SheetRequestDto>
+  ) : Promise<any> {
+
+    const customer = await this.customerService.getCustomerInfoById(sheetRequestDto.customerId);
+    let orderItems = [];
+    
+    // TODO : DB설계 장바구니 안에꺼 어캐담음?
+    const estimateSheet = await this.estimateSheetEntityRepository.save({
+      estimateName : sheetRequestDto.newCustomerName,
+      estimateEmail : sheetRequestDto.newCustomerEmail,
+      estimatePhoneNumber : sheetRequestDto.newCustomerPhoneNumber,
+      estimateBusinessName : sheetRequestDto.businessName,
+      estimateBusinessType : sheetRequestDto.businessType,
+      estimateBusinessNumber : sheetRequestDto.businessNumber,
+      estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
+      estimateAddress : sheetRequestDto.newCustomerAddress,
+      estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
+      estimatePrintingDraft : sheetRequestDto.printingDraft,
+      estimateDesiredDate : sheetRequestDto.desiredDate,
+      estimateRequestMemo : sheetRequestDto.requestMemo,
+      requestStatus : 0,
+      customer : customer,
+
+    })
+
+    return 1
   }
 }

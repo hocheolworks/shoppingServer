@@ -18,6 +18,7 @@ import * as multerS3 from 'multer-s3';
 import * as AWS from 'aws-sdk';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
+import { SheetRequestDto } from './dtos/sheet-request.dto';
 
 const s3 = new AWS.S3();
 AWS.config.update({
@@ -150,5 +151,13 @@ export class OrderController {
   @Get('/:oid/taxBillInfo/')
   async selectTaxBillInfoByOrderId(@Param('oid') oid: number) {
     return await this.orderService.selectTaxBillInfoByOrderId(oid);
+  }
+
+  @Post('/sheetRequest')
+  async insertSheetRequest(
+    @Body() sheetRequestDto: Partial<SheetRequestDto>
+  ){
+    console.log(sheetRequestDto);
+    return await this.orderService.insertEstimateSheetRequest(sheetRequestDto);
   }
 }

@@ -22,8 +22,8 @@ import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
 import { SheetRequestDto } from './dtos/sheet-request.dto';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
-import EstimateOrderEntity from './entities/estimate-order.entity';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
+import EstimateItemsEntity from './entities/estimate-items';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -79,10 +79,10 @@ export class OrderService {
 
     @InjectRepository(EstimateSheetEntity)
     private readonly estimateSheetEntityRepository: Repository<EstimateSheetEntity>,
-    
-    @InjectRepository(EstimateOrderEntity)
-    private readonly estimateOrderEntityRepository: Repository<EstimateOrderEntity>,    
 
+    @InjectRepository(EstimateItemsEntity)
+    private readonly estimateItemsEntityRepository: Repository<EstimateItemsEntity>,
+    
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
   ) {}
@@ -370,39 +370,53 @@ export class OrderService {
       customerId : number,      
       orderItems : Array<InputCartItemInfoDto>,
     }
-  ) : Promise<any> {
+  ) : Promise<number> {
 
-    let price = 0;
+    let estimateSheet = undefined;
+    let estimateItems = undefined;
+    let cart = undefined;
 
-    // TODO : 카트에 담겨있는 물건들 + 개수 어떻게 연결시킬건지 생각
-    let item = undefined;
-    params.orderItems.map((val) => {
-      price += val.productCount * val.productPrice;
-    })
+    try {
+      const sheetRequestDto = params.sheetRequest;
+      estimateSheet = await this.estimateSheetEntityRepository.save({
+        estimateName : sheetRequestDto.newCustomerName,
+        estimateEmail : sheetRequestDto.newCustomerEmail,
+        estimatePhoneNumber : sheetRequestDto.newCustomerPhoneNumber,
+        estimateBusinessName : sheetRequestDto.businessName,
+        estimateBusinessType : sheetRequestDto.businessType,
+        estimateBusinessNumber : sheetRequestDto.businessNumber,
+        estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
+        estimateAddress : sheetRequestDto.newCustomerAddress,
+        estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
+        estimatePrintingDraft : sheetRequestDto.printingDraft,
+        estimateDesiredDate : sheetRequestDto.desiredDate,
+        estimateRequestMemo : sheetRequestDto.requestMemo,
+      });
+    }
+    catch(e) {
+      console.log(e);
+      return 0;
+    }
 
-    const sheetRequestDto = params.sheetRequest;
-    const estimateSheet = await this.estimateSheetEntityRepository.save({
-      estimateName : sheetRequestDto.newCustomerName,
-      estimateEmail : sheetRequestDto.newCustomerEmail,
-      estimatePhoneNumber : sheetRequestDto.newCustomerPhoneNumber,
-      estimateBusinessName : sheetRequestDto.businessName,
-      estimateBusinessType : sheetRequestDto.businessType,
-      estimateBusinessNumber : sheetRequestDto.businessNumber,
-      estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
-      estimateAddress : sheetRequestDto.newCustomerAddress,
-      estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
-      estimatePrintingDraft : sheetRequestDto.printingDraft,
-      estimateDesiredDate : sheetRequestDto.desiredDate,
-      estimateRequestMemo : sheetRequestDto.requestMemo,
-      
-    })
+    try {
+      params.orderItems.map(async (val) => {
+        estimateItems = await this.estimateItemsEntityRepository.save({
+          estimateSheetId : estimateSheet.id,
+          customerId : params.customerId,
+          productId : val.productId,
+          estimateItemEA : val.productCount,
+          orderItemTotalPrice: val.productPrice * val.productCount,
+          isPrint : val.isPrint,
+        })
 
-    const estimateOrder = await this.estimateOrderEntityRepository.save({
-      sheet:estimateSheet,
-      orderTotalPrice : price,
-      customerId : params.customerId,
-    })
+        cart = await this.customerService.deleteCartItem(params.customerId, val.productId);
+      });
+    }
+    catch(e) {
+      console.log(e);
+      return 0;
+    }
 
-    return 1
+    return 1;
   }
 }

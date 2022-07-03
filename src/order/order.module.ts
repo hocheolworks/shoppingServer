@@ -12,7 +12,7 @@ import PaymentHistoryEntity from './entities/payment-history.entity';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
-import EstimateOrderEntity from './entities/estimate-order.entity';
+import EstimateItemsEntity from './entities/estimate-items';
 
 @Module({
   imports: [
@@ -25,7 +25,7 @@ import EstimateOrderEntity from './entities/estimate-order.entity';
       TaxBillInfoEntity,
       OrderDesignFileInfoEntity,
       EstimateSheetEntity,
-      EstimateOrderEntity,
+      EstimateItemsEntity,
     ]),
     CustomerModule,
   ],

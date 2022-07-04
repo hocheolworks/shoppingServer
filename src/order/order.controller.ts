@@ -20,6 +20,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import { SheetRequestDto } from './dtos/sheet-request.dto';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
+import EstimateSheetEntity from './entities/estimate-sheet.entity';
 
 const s3 = new AWS.S3();
 AWS.config.update({
@@ -163,5 +164,19 @@ export class OrderController {
     }
   ){
     return await this.orderService.insertEstimateSheetRequest(params);
+  }
+
+  @Get('/customer/estimate/:customerId')
+  async getEstimatesByCustomerId(
+    @Param('customerId') customerId,
+  ): Promise<EstimateSheetEntity[]> {
+    return await this.orderService.getEstimatesByCustomerId(customerId);
+  }
+
+  @Get('/estimate/:sid')
+  async selectEstimateInfoByEstimateSheetId(
+    @Param('sid') sid: number
+  ): Promise<EstimateSheetEntity> {
+    return await this.orderService.selectEstimateInfoByEstimateSheetId(sid);
   }
 }

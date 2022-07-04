@@ -391,6 +391,7 @@ export class OrderService {
         estimatePrintingDraft : sheetRequestDto.printingDraft,
         estimateDesiredDate : sheetRequestDto.desiredDate,
         estimateRequestMemo : sheetRequestDto.requestMemo,
+        customerId : params.customerId,
       });
     }
     catch(e) {
@@ -418,5 +419,21 @@ export class OrderService {
     }
 
     return 1;
+  }
+
+  async getEstimatesByCustomerId(
+    customerId: number,
+  ): Promise<EstimateSheetEntity[]> {
+    return await this.estimateSheetEntityRepository.find({
+      where: {
+        customerId: customerId
+      },
+    })
+  }
+
+  async selectEstimateInfoByEstimateSheetId(
+    sid: number,
+  ): Promise<EstimateSheetEntity> {
+    return await this.estimateSheetEntityRepository.findOne({ id: sid });
   }
 }

@@ -20,10 +20,11 @@ import { getLocation } from 'src/common/functions/functions';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
-import { SheetRequestDto } from './dtos/sheet-request.dto';
+import { SelectEstimateItemsDto, SheetRequestDto } from './dtos/sheet-request.dto';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
 import EstimateItemsEntity from './entities/estimate-items';
+import { OrderItemsDto } from './dtos/order-items.dto';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -377,7 +378,7 @@ export class OrderService {
     let cart = undefined;
 
     try {
-      const sheetRequestDto = params.sheetRequest;
+      const sheetRequestDto = params.sheetRequest;      
       estimateSheet = await this.estimateSheetEntityRepository.save({
         estimateName : sheetRequestDto.newCustomerName,
         estimateEmail : sheetRequestDto.newCustomerEmail,
@@ -431,9 +432,42 @@ export class OrderService {
     })
   }
 
-  async selectEstimateInfoByEstimateSheetId(
+  async selectEstimateInfoBySheetId(
     sid: number,
   ): Promise<EstimateSheetEntity> {
     return await this.estimateSheetEntityRepository.findOne({ id: sid });
+  }
+
+  async selectEstimateItemsBySheetId(
+    sid: number,
+  ): Promise<Partial<SelectEstimateItemsDto>[]> {
+    const items =  await this.estimateItemsEntityRepository.find({where : { estimateSheetId: sid }});
+    
+    let response : Partial<SelectEstimateItemsDto>[] = [];
+    let item = undefined;
+
+    for(let i=0;i<items.length;i++){
+      let dto:Partial<SelectEstimateItemsDto> = {
+        id: items[i].id,
+        estimateSheetId: items[i].estimateSheetId,
+        customerId: items[i].customerId,
+        productId: items[i].productId,
+        estimateItemEA: items[i].estimateItemEA,
+        orderItemTotalPrice: items[i].orderItemTotalPrice,
+        isPrint: items[i].isPrint,
+        createdAt: items[i].createdAt,
+        updatedAt: items[i].updatedAt,        
+        deletedAt: items[i].deletedAt,
+      };
+
+      item = await this.productInfoRepository.findOne({id:items[i].productId});
+      if(item != undefined){
+        dto.productName = item.productName;
+        dto.productPrice= item.productPrice;
+      }
+      response.push(dto);
+    }
+
+    return response
   }
 }

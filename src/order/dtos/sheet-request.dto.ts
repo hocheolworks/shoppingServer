@@ -214,3 +214,87 @@ export class SelectEstimateInfoDto {
   })
   customerId : number;
 }
+
+export class SelectEstimateItemsDto {
+  @ApiProperty({
+    description: 'sheet id',
+    example: '1',
+    required: true,
+  })
+  id: number;
+
+  @ApiProperty({
+    description: '만들어진 날짜',
+    example: '2022-07-03 23:41:26.401089',
+  })
+  createdAt: Date;
+
+  @ApiProperty({
+    description: '수정된 날짜',
+    example: '2022-07-03 23:41:26.401089',
+  })
+  updatedAt: Date;
+  
+  @ApiProperty({
+    description: '삭제된 날짜',
+    example: '2022-07-03 23:41:26.401089',
+    nullable: true
+  })
+  deletedAt: Date;
+
+  @ApiProperty({
+    description: '견적서 번호',
+    example: '1',
+    required: true,
+  })
+  estimateSheetId: number;
+  
+  @ApiProperty({
+    description: '고객 번호',
+    example: '11',
+    required: true,
+  })
+  customerId: number;
+  
+  @ApiProperty({
+    description: '상품 번호',
+    example: '111',
+    required: true,
+  })
+  productId: number;
+
+  @ApiProperty({
+    description: '상품 수량',
+    example: '1000',
+    required: true,
+  })
+  estimateItemEA: number;
+
+  @ApiProperty({
+    description: '상품 합계금액',
+    example: '1000',
+    required: true,
+  })
+  orderItemTotalPrice: number;
+
+  @ApiProperty({
+    description: '프린트 여부',
+    example: false,
+    required: false,
+  })
+  isPrint : boolean;
+
+  @ApiProperty({
+    description: '상품 이름',
+    example: "쭈란 가방",
+    required: false,
+  })
+  productName : string;
+  
+  @ApiProperty({
+    description: '상품 가격',
+    example: 900,
+    required: false,
+  })
+  productPrice : number;
+}

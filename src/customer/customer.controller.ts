@@ -21,6 +21,7 @@ import {
   SelectCartItemInfoDto,
 } from './dtos/cartItem-info.dto';
 import { CustomerInfoDto } from './dtos/customer-info.dto';
+import { SendSmsDto } from './dtos/send-sms.dto';
 
 @Controller('customer')
 export class CustomerController {
@@ -32,6 +33,12 @@ export class CustomerController {
   @Post('/verify-phone')
   async verifyPhone(@Body() verifyPhoneDto: VerifyPhoneDto): Promise<any> {
     return await this.authService.sendSMS(verifyPhoneDto);
+  }
+
+  @Post('/alarm/quotation')
+  async alarmQuotation(@Body() sendSmsDto: SendSmsDto): Promise<any> {
+    console.log('quoation called!');
+    return await this.authService.sendQuotationAlarmSMS(sendSmsDto);
   }
 
   @Get('/all')

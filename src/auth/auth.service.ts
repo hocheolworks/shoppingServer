@@ -1,5 +1,6 @@
 import { NewCustomerInfo } from './../customer/customer.interface';
 import { VerifyPhoneDto } from './../customer/dtos/verify-phone.dto';
+import { response } from 'express';
 import { LoginRequestDto } from './dtos/login.request.dto';
 import { Repository } from 'typeorm';
 import {
@@ -13,7 +14,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import * as crypto from 'crypto';
-import { SendSmsDto } from 'src/customer/dtos/send-sms.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,47 +42,6 @@ export class AuthService {
     const signature = hmac.update(message.join('')).digest('base64');
     //message.join('') 으로 만들어진 string 을 hmac 에 담고, base64로 인코딩한다
     return signature.toString(); // toString()이 없었어서 에러가 자꾸 났었는데, 반드시 고쳐야함.
-  }
-
-  async sendQuotationAlarmSMS(sendSmsDto: SendSmsDto) {
-    const customerPhoneNumber = sendSmsDto.phoneNumber;
-    const messageBody = `[진솔유통] 견적서 확인 안내
-홈페이지에서 로그인 후 확인하실 수 있습니다.`;
-
-    const body = {
-      type: 'SMS',
-      contentType: 'COMM',
-      countryCode: '82',
-      from: process.env.SMS_SENDER,
-      content: messageBody,
-      messages: [
-        {
-          to: customerPhoneNumber,
-        },
-      ],
-    };
-    const options = {
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'x-ncp-apigw-timestamp': Date.now().toString(),
-        'x-ncp-iam-access-key': process.env.IAM_ACCESS_KEY,
-        'x-ncp-apigw-signature-v2': this.makeSignature(),
-      },
-    };
-
-    console.log(options);
-
-    console.log(body);
-
-    const result = await axios.post(
-      `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
-      body,
-      options,
-    );
-
-    console.log(result);
-
-    return body;
   }
 
   async sendSMS(verifyPhoneDto: VerifyPhoneDto) {

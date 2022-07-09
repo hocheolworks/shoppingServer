@@ -85,4 +85,6 @@ export class InputCartItemInfoDto {
   productCount: number;
 
   productPrice: number;
+
+  isPrint : boolean;
 }

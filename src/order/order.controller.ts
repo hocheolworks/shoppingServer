@@ -18,8 +18,10 @@ import * as multerS3 from 'multer-s3';
 import * as AWS from 'aws-sdk';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
-import { SheetRequestDto } from './dtos/sheet-request.dto';
+import { SelectEstimateItemsDto, SheetRequestDto } from './dtos/sheet-request.dto';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
+import EstimateSheetEntity from './entities/estimate-sheet.entity';
+import EstimateItemsEntity from './entities/estimate-items';
 
 const s3 = new AWS.S3();
 AWS.config.update({
@@ -163,5 +165,26 @@ export class OrderController {
     }
   ){
     return await this.orderService.insertEstimateSheetRequest(params);
+  }
+
+  @Get('/customer/estimate/:customerId')
+  async getEstimatesByCustomerId(
+    @Param('customerId') customerId,
+  ): Promise<EstimateSheetEntity[]> {
+    return await this.orderService.getEstimatesByCustomerId(customerId);
+  }
+
+  @Get('/estimate/:sid')
+  async selectEstimateInfoBySheetId(
+    @Param('sid') sid: number
+  ): Promise<EstimateSheetEntity> {
+    return await this.orderService.selectEstimateInfoBySheetId(sid);
+  }
+
+  @Get('/estimate/items/:sid')
+  async selectEstimateItemsBySheetId(
+    @Param('sid') sid: number
+  ): Promise<Partial<SelectEstimateItemsDto>[]> {
+    return await this.orderService.selectEstimateItemsBySheetId(sid);
   }
 }

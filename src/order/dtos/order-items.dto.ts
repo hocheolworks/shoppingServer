@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsPhoneNumber, IsString } from 'class-validator';
 
 export class OrderItemsDto {
   @ApiProperty({
-    description: 'order_info 테이블에 해당하는 id', // TODO : 사용할지 말지 정해야함, 사용안하면 삭제할것
+    description: 'order_info 테이블에 해당하는 id',
     example: 1,
     required: true,
   })

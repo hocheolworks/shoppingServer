@@ -20,10 +20,11 @@ import { getLocation } from 'src/common/functions/functions';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
-import { SheetRequestDto } from './dtos/sheet-request.dto';
+import { SelectEstimateItemsDto, SheetRequestDto } from './dtos/sheet-request.dto';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
-import EstimateOrderEntity from './entities/estimate-order.entity';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
+import EstimateItemsEntity from './entities/estimate-items';
+import { OrderItemsDto } from './dtos/order-items.dto';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -79,10 +80,10 @@ export class OrderService {
 
     @InjectRepository(EstimateSheetEntity)
     private readonly estimateSheetEntityRepository: Repository<EstimateSheetEntity>,
-    
-    @InjectRepository(EstimateOrderEntity)
-    private readonly estimateOrderEntityRepository: Repository<EstimateOrderEntity>,    
 
+    @InjectRepository(EstimateItemsEntity)
+    private readonly estimateItemsEntityRepository: Repository<EstimateItemsEntity>,
+    
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
   ) {}
@@ -370,39 +371,103 @@ export class OrderService {
       customerId : number,      
       orderItems : Array<InputCartItemInfoDto>,
     }
-  ) : Promise<any> {
+  ) : Promise<number> {
 
-    let price = 0;
+    let estimateSheet = undefined;
+    let estimateItems = undefined;
+    let cart = undefined;
 
-    // TODO : 카트에 담겨있는 물건들 + 개수 어떻게 연결시킬건지 생각
+    try {
+      const sheetRequestDto = params.sheetRequest;      
+      estimateSheet = await this.estimateSheetEntityRepository.save({
+        estimateName : sheetRequestDto.newCustomerName,
+        estimateEmail : sheetRequestDto.newCustomerEmail,
+        estimatePhoneNumber : sheetRequestDto.newCustomerPhoneNumber,
+        estimateBusinessName : sheetRequestDto.businessName,
+        estimateBusinessType : sheetRequestDto.businessType,
+        estimateBusinessNumber : sheetRequestDto.businessNumber,
+        estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
+        estimateAddress : sheetRequestDto.newCustomerAddress,
+        estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
+        estimatePrintingDraft : sheetRequestDto.printingDraft,
+        estimateDesiredDate : sheetRequestDto.desiredDate,
+        estimateRequestMemo : sheetRequestDto.requestMemo,
+        customerId : params.customerId,
+      });
+    }
+    catch(e) {
+      console.log(e);
+      return 0;
+    }
+
+    try {
+      params.orderItems.map(async (val) => {
+        estimateItems = await this.estimateItemsEntityRepository.save({
+          estimateSheetId : estimateSheet.id,
+          customerId : params.customerId,
+          productId : val.productId,
+          estimateItemEA : val.productCount,
+          orderItemTotalPrice: val.productPrice * val.productCount,
+          isPrint : val.isPrint,
+        })
+
+        cart = await this.customerService.deleteCartItem(params.customerId, val.productId);
+      });
+    }
+    catch(e) {
+      console.log(e);
+      return 0;
+    }
+
+    return 1;
+  }
+
+  async getEstimatesByCustomerId(
+    customerId: number,
+  ): Promise<EstimateSheetEntity[]> {
+    return await this.estimateSheetEntityRepository.find({
+      where: {
+        customerId: customerId
+      },
+    })
+  }
+
+  async selectEstimateInfoBySheetId(
+    sid: number,
+  ): Promise<EstimateSheetEntity> {
+    return await this.estimateSheetEntityRepository.findOne({ id: sid });
+  }
+
+  async selectEstimateItemsBySheetId(
+    sid: number,
+  ): Promise<Partial<SelectEstimateItemsDto>[]> {
+    const items =  await this.estimateItemsEntityRepository.find({where : { estimateSheetId: sid }});
+    
+    let response : Partial<SelectEstimateItemsDto>[] = [];
     let item = undefined;
-    params.orderItems.map((val) => {
-      price += val.productCount * val.productPrice;
-    })
 
-    const sheetRequestDto = params.sheetRequest;
-    const estimateSheet = await this.estimateSheetEntityRepository.save({
-      estimateName : sheetRequestDto.newCustomerName,
-      estimateEmail : sheetRequestDto.newCustomerEmail,
-      estimatePhoneNumber : sheetRequestDto.newCustomerPhoneNumber,
-      estimateBusinessName : sheetRequestDto.businessName,
-      estimateBusinessType : sheetRequestDto.businessType,
-      estimateBusinessNumber : sheetRequestDto.businessNumber,
-      estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
-      estimateAddress : sheetRequestDto.newCustomerAddress,
-      estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
-      estimatePrintingDraft : sheetRequestDto.printingDraft,
-      estimateDesiredDate : sheetRequestDto.desiredDate,
-      estimateRequestMemo : sheetRequestDto.requestMemo,
-      
-    })
+    for(let i=0;i<items.length;i++){
+      let dto:Partial<SelectEstimateItemsDto> = {
+        id: items[i].id,
+        estimateSheetId: items[i].estimateSheetId,
+        customerId: items[i].customerId,
+        productId: items[i].productId,
+        estimateItemEA: items[i].estimateItemEA,
+        orderItemTotalPrice: items[i].orderItemTotalPrice,
+        isPrint: items[i].isPrint,
+        createdAt: items[i].createdAt,
+        updatedAt: items[i].updatedAt,        
+        deletedAt: items[i].deletedAt,
+      };
 
-    const estimateOrder = await this.estimateOrderEntityRepository.save({
-      sheet:estimateSheet,
-      orderTotalPrice : price,
-      customerId : params.customerId,
-    })
+      item = await this.productInfoRepository.findOne({id:items[i].productId});
+      if(item != undefined){
+        dto.productName = item.productName;
+        dto.productPrice= item.productPrice;
+      }
+      response.push(dto);
+    }
 
-    return 1
+    return response
   }
 }

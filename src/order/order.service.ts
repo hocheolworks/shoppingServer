@@ -25,6 +25,7 @@ import EstimateSheetEntity from './entities/estimate-sheet.entity';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
 import EstimateItemsEntity from './entities/estimate-items';
 import { OrderItemsDto } from './dtos/order-items.dto';
+import EstimateDesignFileInfoEntity from './entities/estimateDesignFile.entity';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -83,6 +84,9 @@ export class OrderService {
 
     @InjectRepository(EstimateItemsEntity)
     private readonly estimateItemsEntityRepository: Repository<EstimateItemsEntity>,
+
+    @InjectRepository(EstimateDesignFileInfoEntity)
+    private readonly estimateDesignFileInfoEntityRepository: Repository<EstimateDesignFileInfoEntity>,
     
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
@@ -378,7 +382,8 @@ export class OrderService {
     let cart = undefined;
 
     try {
-      const sheetRequestDto = params.sheetRequest;      
+      const sheetRequestDto = params.sheetRequest; 
+      
       estimateSheet = await this.estimateSheetEntityRepository.save({
         estimateName : sheetRequestDto.newCustomerName,
         estimateEmail : sheetRequestDto.newCustomerEmail,
@@ -389,11 +394,19 @@ export class OrderService {
         estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
         estimateAddress : sheetRequestDto.newCustomerAddress,
         estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
-        estimatePrintingDraft : sheetRequestDto.printingDraft,
         estimateDesiredDate : sheetRequestDto.desiredDate,
         estimateRequestMemo : sheetRequestDto.requestMemo,
         customerId : params.customerId,
       });
+
+      for (let i = 0; i < sheetRequestDto.printingDraft.length; i++) {
+        const filePath = sheetRequestDto.printingDraft[i];
+        await this.estimateDesignFileInfoEntityRepository.save({
+          sId: estimateSheet.id,
+          designFilePath: decodeURI(filePath),
+        })
+      }
+
     }
     catch(e) {
       console.log(e);
@@ -469,5 +482,12 @@ export class OrderService {
     }
 
     return response
+  }
+
+  async getEstimateDesignFilepathsBySheetId(sid: number): Promise<string[]> {
+    const designFiles = await this.estimateDesignFileInfoEntityRepository.find({
+      sId: sid,
+    });
+    return designFiles.map((val) => val.designFilePath);
   }
 }

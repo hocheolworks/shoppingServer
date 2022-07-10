@@ -73,7 +73,7 @@ export class SheetRequestDto {
     example: '파일경로? 미정',
     required: false,
   })
-  printingDraft : string | undefined;
+  printingDraft : string[];
   
   @ApiProperty({
     description: '납기 희망일',

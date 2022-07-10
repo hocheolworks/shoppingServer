@@ -33,9 +33,6 @@ class EstimateSheetEntity extends CoreEntity {
   @Column({ type: 'varchar', length: 256, comment: '배송 상세 주소' })
   estimateAddressDetail: string;
 
-  @Column({ type: 'varchar', length: 256, comment: '인쇄시안', nullable: true })
-  estimatePrintingDraft: string;
-
   @Column({ type: 'varchar', length: 32, comment: '납기 희망일' })
   estimateDesiredDate: string;
 

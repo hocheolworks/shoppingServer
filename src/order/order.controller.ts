@@ -156,12 +156,13 @@ export class OrderController {
 
   @Post('/sheetRequest')
   async insertSheetRequest(
-    @Body() params: { 
-      sheetRequest : Partial<SheetRequestDto>,
-      customerId : number,      
-      orderItems : Array<InputCartItemInfoDto>,
-    }
-  ){
+    @Body()
+    params: {
+      sheetRequest: Partial<SheetRequestDto>;
+      customerId: number;
+      orderItems: Array<InputCartItemInfoDto>;
+    },
+  ) {
     return await this.orderService.insertEstimateSheetRequest(params);
   }
 }

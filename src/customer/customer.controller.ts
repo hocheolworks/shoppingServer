@@ -22,6 +22,7 @@ import {
 } from './dtos/cartItem-info.dto';
 import { CustomerInfoDto } from './dtos/customer-info.dto';
 import { SendSmsDto } from './dtos/send-sms.dto';
+import { SendAccountSmsDto } from './dtos/send-account-alarm.dto';
 
 @Controller('customer')
 export class CustomerController {
@@ -29,6 +30,13 @@ export class CustomerController {
     private readonly customerService: CustomerService,
     private readonly authService: AuthService,
   ) {}
+  @Post('/alarm/account')
+  async alarmAccount(
+    @Body() sendAccountSmsDto: SendAccountSmsDto,
+  ): Promise<any> {
+    console.log('alarmAccount called!');
+    return await this.authService.sendAccountAlarmSMS(sendAccountSmsDto);
+  }
 
   @Post('/verify-phone')
   async verifyPhone(@Body() verifyPhoneDto: VerifyPhoneDto): Promise<any> {

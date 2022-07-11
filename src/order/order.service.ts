@@ -20,11 +20,17 @@ import { getLocation } from 'src/common/functions/functions';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
-import { SelectEstimateItemsDto, SheetRequestDto } from './dtos/sheet-request.dto';
+import {
+  SelectEstimateItemsDto,
+  SheetRequestDto,
+} from './dtos/sheet-request.dto';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
-import EstimateItemsEntity from './entities/estimate-items';
+import EstimateItemsEntity from './entities/estimate-items.entity';
 import { OrderItemsDto } from './dtos/order-items.dto';
+import { EstimateResponseDto } from './dtos/estimate-response.dto';
+import EstimateResponseEntity from './entities/estimate-response.entity';
+import { EstimateInfoDto } from './dtos/estimate-sheet.dto';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -83,7 +89,10 @@ export class OrderService {
 
     @InjectRepository(EstimateItemsEntity)
     private readonly estimateItemsEntityRepository: Repository<EstimateItemsEntity>,
-    
+
+    @InjectRepository(EstimateResponseEntity)
+    private readonly estimateResponseEntityRepository: Repository<EstimateResponseEntity>,
+
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
   ) {}
@@ -365,37 +374,33 @@ export class OrderService {
     return designFiles.map((val) => val.designFilePath);
   }
 
-  async insertEstimateSheetRequest(
-    params: { 
-      sheetRequest : Partial<SheetRequestDto>,
-      customerId : number,      
-      orderItems : Array<InputCartItemInfoDto>,
-    }
-  ) : Promise<number> {
-
+  async insertEstimateSheetRequest(params: {
+    sheetRequest: Partial<SheetRequestDto>;
+    customerId: number;
+    orderItems: Array<InputCartItemInfoDto>;
+  }): Promise<number> {
     let estimateSheet = undefined;
     let estimateItems = undefined;
     let cart = undefined;
 
     try {
-      const sheetRequestDto = params.sheetRequest;      
+      const sheetRequestDto = params.sheetRequest;
       estimateSheet = await this.estimateSheetEntityRepository.save({
-        estimateName : sheetRequestDto.newCustomerName,
-        estimateEmail : sheetRequestDto.newCustomerEmail,
-        estimatePhoneNumber : sheetRequestDto.newCustomerPhoneNumber,
-        estimateBusinessName : sheetRequestDto.businessName,
-        estimateBusinessType : sheetRequestDto.businessType,
-        estimateBusinessNumber : sheetRequestDto.businessNumber,
-        estimatePostIndex : sheetRequestDto.newCustomerPostIndex,
-        estimateAddress : sheetRequestDto.newCustomerAddress,
-        estimateAddressDetail : sheetRequestDto.newCustomerAddressDetail,
-        estimatePrintingDraft : sheetRequestDto.printingDraft,
-        estimateDesiredDate : sheetRequestDto.desiredDate,
-        estimateRequestMemo : sheetRequestDto.requestMemo,
-        customerId : params.customerId,
+        estimateName: sheetRequestDto.newCustomerName,
+        estimateEmail: sheetRequestDto.newCustomerEmail,
+        estimatePhoneNumber: sheetRequestDto.newCustomerPhoneNumber,
+        estimateBusinessName: sheetRequestDto.businessName,
+        estimateBusinessType: sheetRequestDto.businessType,
+        estimateBusinessNumber: sheetRequestDto.businessNumber,
+        estimatePostIndex: sheetRequestDto.newCustomerPostIndex,
+        estimateAddress: sheetRequestDto.newCustomerAddress,
+        estimateAddressDetail: sheetRequestDto.newCustomerAddressDetail,
+        estimatePrintingDraft: sheetRequestDto.printingDraft,
+        estimateDesiredDate: sheetRequestDto.desiredDate,
+        estimateRequestMemo: sheetRequestDto.requestMemo,
+        customerId: params.customerId,
       });
-    }
-    catch(e) {
+    } catch (e) {
       console.log(e);
       return 0;
     }
@@ -403,18 +408,20 @@ export class OrderService {
     try {
       params.orderItems.map(async (val) => {
         estimateItems = await this.estimateItemsEntityRepository.save({
-          estimateSheetId : estimateSheet.id,
-          customerId : params.customerId,
-          productId : val.productId,
-          estimateItemEA : val.productCount,
+          estimateSheetId: estimateSheet.id,
+          customerId: params.customerId,
+          productId: val.productId,
+          estimateItemEA: val.productCount,
           orderItemTotalPrice: val.productPrice * val.productCount,
-          isPrint : val.isPrint,
-        })
+          isPrint: val.isPrint,
+        });
 
-        cart = await this.customerService.deleteCartItem(params.customerId, val.productId);
+        cart = await this.customerService.deleteCartItem(
+          params.customerId,
+          val.productId,
+        );
       });
-    }
-    catch(e) {
+    } catch (e) {
       console.log(e);
       return 0;
     }
@@ -422,32 +429,62 @@ export class OrderService {
     return 1;
   }
 
+  async insertEstimateResponse(
+    estimateResponseDto: Partial<EstimateResponseDto>,
+  ): Promise<boolean> {
+    try {
+      await this.estimateResponseEntityRepository.save(estimateResponseDto);
+      await this.estimateSheetEntityRepository.update(
+        { id: estimateResponseDto.estimateSheetId },
+        { requestStatus: '답변완료' },
+      );
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+
+    return true;
+  }
+
   async getEstimatesByCustomerId(
     customerId: number,
   ): Promise<EstimateSheetEntity[]> {
     return await this.estimateSheetEntityRepository.find({
       where: {
-        customerId: customerId
+        customerId: customerId,
       },
-    })
+    });
   }
 
-  async selectEstimateInfoBySheetId(
-    sid: number,
-  ): Promise<EstimateSheetEntity> {
-    return await this.estimateSheetEntityRepository.findOne({ id: sid });
+  async getAllEstimates(): Promise<EstimateSheetEntity[]> {
+    return await this.estimateSheetEntityRepository.find();
+  }
+
+  async selectEstimateInfoBySheetId(sid: number): Promise<EstimateInfoDto> {
+    const selectedItem: EstimateInfoDto =
+      await this.estimateSheetEntityRepository.findOne({ id: sid });
+
+    if (selectedItem.requestStatus === '답변완료') {
+      const answer = await this.estimateResponseEntityRepository.findOne({
+        estimateSheetId: sid,
+      });
+      selectedItem.response = answer;
+    }
+
+    return selectedItem;
   }
 
   async selectEstimateItemsBySheetId(
     sid: number,
   ): Promise<Partial<SelectEstimateItemsDto>[]> {
-    const items =  await this.estimateItemsEntityRepository.find({where : { estimateSheetId: sid }});
-    
-    let response : Partial<SelectEstimateItemsDto>[] = [];
+    const items = await this.estimateItemsEntityRepository.find({
+      where: { estimateSheetId: sid },
+    });
+
+    let response: Partial<SelectEstimateItemsDto>[] = [];
     let item = undefined;
 
-    for(let i=0;i<items.length;i++){
-      let dto:Partial<SelectEstimateItemsDto> = {
+    for (let i = 0; i < items.length; i++) {
+      let dto: Partial<SelectEstimateItemsDto> = {
         id: items[i].id,
         estimateSheetId: items[i].estimateSheetId,
         customerId: items[i].customerId,
@@ -456,18 +493,20 @@ export class OrderService {
         orderItemTotalPrice: items[i].orderItemTotalPrice,
         isPrint: items[i].isPrint,
         createdAt: items[i].createdAt,
-        updatedAt: items[i].updatedAt,        
+        updatedAt: items[i].updatedAt,
         deletedAt: items[i].deletedAt,
       };
 
-      item = await this.productInfoRepository.findOne({id:items[i].productId});
-      if(item != undefined){
+      item = await this.productInfoRepository.findOne({
+        id: items[i].productId,
+      });
+      if (item != undefined) {
         dto.productName = item.productName;
-        dto.productPrice= item.productPrice;
+        dto.productPrice = item.productPrice;
       }
       response.push(dto);
     }
 
-    return response
+    return response;
   }
 }

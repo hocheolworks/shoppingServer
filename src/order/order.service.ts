@@ -503,6 +503,7 @@ export class OrderService {
       if (item != undefined) {
         dto.productName = item.productName;
         dto.productPrice = item.productPrice;
+        dto.productImageFilepath = item.productImageFilepath;
       }
       response.push(dto);
     }

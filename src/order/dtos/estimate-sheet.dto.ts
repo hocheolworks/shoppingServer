@@ -23,8 +23,6 @@ export class EstimateInfoDto {
 
   estimateAddressDetail: string;
 
-  estimatePrintingDraft: string;
-
   estimateDesiredDate: string;
 
   estimateRequestMemo: string;

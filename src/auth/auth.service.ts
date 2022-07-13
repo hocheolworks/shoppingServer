@@ -14,6 +14,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import * as crypto from 'crypto';
 import { SendSmsDto } from 'src/customer/dtos/send-sms.dto';
+import { SendAccountSmsDto } from 'src/customer/dtos/send-account-alarm.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +43,48 @@ export class AuthService {
     const signature = hmac.update(message.join('')).digest('base64');
     //message.join('') 으로 만들어진 string 을 hmac 에 담고, base64로 인코딩한다
     return signature.toString(); // toString()이 없었어서 에러가 자꾸 났었는데, 반드시 고쳐야함.
+  }
+
+  async sendAccountAlarmSMS(sendAccountSmsDto: SendAccountSmsDto) {
+    console.log(sendAccountSmsDto);
+    const customerPhoneNumber = sendAccountSmsDto.phoneNumber;
+    const totalPrice = sendAccountSmsDto.totalPrice;
+    const messageBody = `결제금액 : ${parseInt(totalPrice).toLocaleString(
+      'ko-KR',
+    )}원
+예금주 : 김진솔
+은행 : 국민은행
+계좌번호 : 001501-04-176307
+감사합니다.`;
+
+    const body = {
+      type: 'LMS',
+      contentType: 'COMM',
+      countryCode: '82',
+      from: process.env.SMS_SENDER,
+      content: messageBody,
+      messages: [
+        {
+          to: customerPhoneNumber,
+          subject: `[진솔유통] 결제 계좌 안내`,
+        },
+      ],
+    };
+    const options = {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'x-ncp-apigw-timestamp': Date.now().toString(),
+        'x-ncp-iam-access-key': process.env.IAM_ACCESS_KEY,
+        'x-ncp-apigw-signature-v2': this.makeSignature(),
+      },
+    };
+    const result = await axios.post(
+      `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
+      body,
+      options,
+    );
+
+    return body;
   }
 
   async sendQuotationAlarmSMS(sendSmsDto: SendSmsDto) {
@@ -127,17 +170,11 @@ export class AuthService {
         },
       };
 
-      console.log(options);
-
-      console.log(body);
-
       const result = await axios.post(
         `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
         body,
         options,
       );
-
-      console.log(result);
 
       return body;
     } else {

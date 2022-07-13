@@ -14,6 +14,8 @@ import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
 import EstimateItemsEntity from './entities/estimate-items.entity';
 import EstimateResponseEntity from './entities/estimate-response.entity';
+// import EstimateItemsEntity from './entities/estimate-items';
+import EstimateDesignFileInfoEntity from './entities/estimateDesignFile.entity';
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import EstimateResponseEntity from './entities/estimate-response.entity';
       EstimateSheetEntity,
       EstimateItemsEntity,
       EstimateResponseEntity,
+      EstimateDesignFileInfoEntity,
     ]),
     CustomerModule,
   ],

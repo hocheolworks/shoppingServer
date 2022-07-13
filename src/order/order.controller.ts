@@ -206,4 +206,11 @@ export class OrderController {
   ): Promise<Partial<SelectEstimateItemsDto>[]> {
     return await this.orderService.selectEstimateItemsBySheetId(sid);
   }
+
+  @Get('/estimate/design/:sid')
+  async getEstimateDesignFilepathsBySheetId(
+    @Param('sid') sid: number,
+  ): Promise<Array<string>> {
+    return await this.orderService.getEstimateDesignFilepathsBySheetId(sid);
+  }
 }

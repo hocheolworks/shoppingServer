@@ -31,6 +31,7 @@ import { OrderItemsDto } from './dtos/order-items.dto';
 import { EstimateResponseDto } from './dtos/estimate-response.dto';
 import EstimateResponseEntity from './entities/estimate-response.entity';
 import { EstimateInfoDto } from './dtos/estimate-sheet.dto';
+import EstimateDesignFileInfoEntity from './entities/estimateDesignFile.entity';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -93,6 +94,9 @@ export class OrderService {
     @InjectRepository(EstimateResponseEntity)
     private readonly estimateResponseEntityRepository: Repository<EstimateResponseEntity>,
 
+    @InjectRepository(EstimateDesignFileInfoEntity)
+    private readonly estimateDesignFileInfoEntityRepository: Repository<EstimateDesignFileInfoEntity>,
+
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
   ) {}
@@ -126,82 +130,90 @@ export class OrderService {
     const orderIdSplit: string[] = tossOrderId.split('-');
     const customerId: number = parseInt(orderIdSplit[1]);
 
-    const options = {
-      method: 'POST',
-      hostname: 'api.tosspayments.com',
-      port: null,
-      path: `/v1/payments/${paymentKey}`,
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          process.env.TOSS_SECRET_KEY + ':',
-          'utf8',
-        ).toString('base64')}`,
-        'Content-Type': 'application/json',
-      },
-    };
+    if (paymentKey === 'notSendRequest') {
+      insertOrder.orderId = tossOrderId;
+      await this.insertOrder(insertOrder, false);
+      if (!tossOrderId.includes('NM')) {
+        await this.customerService.clearCart(customerId);
+      }
+    } else {
+      const options = {
+        method: 'POST',
+        hostname: 'api.tosspayments.com',
+        port: null,
+        path: `/v1/payments/${paymentKey}`,
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            process.env.TOSS_SECRET_KEY + ':',
+            'utf8',
+          ).toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+      };
 
-    const data = {
-      amount: amount,
-      orderId: tossOrderId,
-    };
-    try {
-      const response = await TossPaymentRequest(options, data);
+      const data = {
+        amount: amount,
+        orderId: tossOrderId,
+      };
+      try {
+        const response = await TossPaymentRequest(options, data);
 
-      if (response.status === 200) {
-        // 결제 성공
-        insertOrder.orderId = tossOrderId;
-        await this.insertOrder(
-          insertOrder,
-          (response.data as PaymentHistoryDto).method !== '가상계좌',
-        );
-
-        if (!tossOrderId.includes('NM')) {
-          await this.customerService.clearCart(customerId);
-        }
-
-        await this.paymentService.insertPaymentHistory(
-          response.data as PaymentHistoryDto,
-        );
-      } else {
-        // 결제 실패
-        // 디자인 파일 삭제
-        if (insertOrder.orderDesignFile) {
-          const params: AWS.S3.DeleteObjectsRequest = {
-            Bucket: 'iljo-product',
-            Delete: { Objects: [] },
-          };
-
-          insertOrder.orderDesignFile.forEach((val) =>
-            params.Delete.Objects.push({ Key: decodeURI(getLocation(val)) }),
+        if (response.status === 200) {
+          // 결제 성공
+          insertOrder.orderId = tossOrderId;
+          await this.insertOrder(
+            insertOrder,
+            (response.data as PaymentHistoryDto).method !== '가상계좌',
           );
 
-          s3.deleteObjects(params, (err, data) => {
-            if (err) {
-              switch (err.code) {
-                case 'ENOENT':
-                  console.log('파일이 존재하지 않습니다.');
-                  break;
-                default:
-                  console.log(err);
-                  break;
-              }
-              return;
-            } else {
-              console.log(data);
-            }
-            console.log(
-              `Successfully remove ${insertOrder.orderDesignFile.length} files`,
+          if (!tossOrderId.includes('NM')) {
+            await this.customerService.clearCart(customerId);
+          }
+
+          await this.paymentService.insertPaymentHistory(
+            response.data as PaymentHistoryDto,
+          );
+        } else {
+          // 결제 실패
+          // 디자인 파일 삭제
+          if (insertOrder.orderDesignFile) {
+            const params: AWS.S3.DeleteObjectsRequest = {
+              Bucket: 'iljo-product',
+              Delete: { Objects: [] },
+            };
+
+            insertOrder.orderDesignFile.forEach((val) =>
+              params.Delete.Objects.push({ Key: decodeURI(getLocation(val)) }),
             );
-          });
+
+            s3.deleteObjects(params, (err, data) => {
+              if (err) {
+                switch (err.code) {
+                  case 'ENOENT':
+                    console.log('파일이 존재하지 않습니다.');
+                    break;
+                  default:
+                    console.log(err);
+                    break;
+                }
+                return;
+              } else {
+                console.log(data);
+              }
+              console.log(
+                `Successfully remove ${insertOrder.orderDesignFile.length} files`,
+              );
+            });
+          }
+
+          console.log(response.data);
+          throw new HttpException(response.data, response.status);
         }
 
-        console.log(response.data);
-        throw new HttpException(response.data, response.status);
+        return response.data;
+      } catch (err) {
+        throw new InternalServerErrorException(err);
       }
-
-      return response.data;
-    } catch (err) {
-      throw new InternalServerErrorException(err);
     }
   }
   async insertOrder(
@@ -385,6 +397,7 @@ export class OrderService {
 
     try {
       const sheetRequestDto = params.sheetRequest;
+
       estimateSheet = await this.estimateSheetEntityRepository.save({
         estimateName: sheetRequestDto.newCustomerName,
         estimateEmail: sheetRequestDto.newCustomerEmail,
@@ -395,11 +408,18 @@ export class OrderService {
         estimatePostIndex: sheetRequestDto.newCustomerPostIndex,
         estimateAddress: sheetRequestDto.newCustomerAddress,
         estimateAddressDetail: sheetRequestDto.newCustomerAddressDetail,
-        estimatePrintingDraft: sheetRequestDto.printingDraft,
         estimateDesiredDate: sheetRequestDto.desiredDate,
         estimateRequestMemo: sheetRequestDto.requestMemo,
         customerId: params.customerId,
       });
+
+      for (let i = 0; i < sheetRequestDto.printingDraft.length; i++) {
+        const filePath = sheetRequestDto.printingDraft[i];
+        await this.estimateDesignFileInfoEntityRepository.save({
+          sId: estimateSheet.id,
+          designFilePath: decodeURI(filePath),
+        });
+      }
     } catch (e) {
       console.log(e);
       return 0;
@@ -509,5 +529,12 @@ export class OrderService {
     }
 
     return response;
+  }
+
+  async getEstimateDesignFilepathsBySheetId(sid: number): Promise<string[]> {
+    const designFiles = await this.estimateDesignFileInfoEntityRepository.find({
+      sId: sid,
+    });
+    return designFiles.map((val) => val.designFilePath);
   }
 }

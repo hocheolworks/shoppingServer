@@ -133,6 +133,7 @@ export class OrderService {
     if (paymentKey === 'notSendRequest') {
       insertOrder.orderId = tossOrderId;
       await this.insertOrder(insertOrder, false);
+
       if (!tossOrderId.includes('NM')) {
         await this.customerService.clearCart(customerId);
       }
@@ -241,6 +242,10 @@ export class OrderService {
         orderIsPaid: isPaid,
         orderId: insertOrderInfoDto.orderId,
         isTaxBill: insertOrderInfoDto.isTaxBill,
+        estimateId:
+          insertOrderInfoDto.estimateId !== -1
+            ? insertOrderInfoDto.estimateId
+            : -1,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;
@@ -266,6 +271,16 @@ export class OrderService {
           product: product,
           isPrint: cartItem.isPrint,
         });
+      }
+
+      // 견적서 결제일 경우, 견적서 상태까지 변경해줘야함
+      if (insertOrderInfoDto.estimateId !== -1) {
+        await this.estimateSheetEntityRepository.update(
+          { id: insertOrderInfoDto.estimateId },
+          {
+            requestStatus: isPaid ? '결제완료' : '결제대기',
+          },
+        );
       }
 
       return result;
@@ -483,7 +498,11 @@ export class OrderService {
     const selectedItem: EstimateInfoDto =
       await this.estimateSheetEntityRepository.findOne({ id: sid });
 
-    if (selectedItem.requestStatus === '답변완료') {
+    if (
+      selectedItem.requestStatus === '답변완료' ||
+      selectedItem.requestStatus === '결제대기' ||
+      selectedItem.requestStatus === '결제완료'
+    ) {
       const answer = await this.estimateResponseEntityRepository.findOne({
         estimateSheetId: sid,
       });

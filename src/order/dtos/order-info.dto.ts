@@ -159,6 +159,16 @@ export class SelectOrderInfoDto {
   isTaxBill: boolean;
 
   @ApiProperty({
+    description: '견적서 Id',
+    example: 34,
+    required: false,
+    default: -1,
+  })
+  @IsNotEmpty()
+  @IsBoolean()
+  estimateId: number;
+
+  @ApiProperty({
     description: '생성날짜',
     example: '2022-03-29 11:49:02.286',
     required: true,

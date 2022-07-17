@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import ProductInfoEntity from 'src/product/entities/product.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
 import OrderItemInfoEntity from './entities/orderItem.entity';
@@ -312,6 +312,13 @@ export class OrderService {
         })
         .where('orderId = :orderId', { orderId: orderId })
         .execute();
+
+      const entityManager = getManager();
+      await entityManager.query(`
+      UPDATE isitworks.estimate_info A INNER JOIN isitworks.order_info B 
+      ON A.id = B.estimateId
+      SET requestStatus = "${orderStatus}"
+      WHERE B.orderId = "${orderId}";`);
     } catch (err) {
       throw new InternalServerErrorException(err);
     }

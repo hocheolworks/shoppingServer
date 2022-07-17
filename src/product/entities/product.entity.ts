@@ -10,7 +10,7 @@ class ProductInfoEntity extends CoreEntity {
   @Column({ type: 'varchar', length: '128', comment: '상품 명' })
   productName: string;
 
-  @Column({ type: 'text', comment: '상품 설명' })
+  @Column({ type: 'text', comment: '상품 설명', default: '' })
   productDescription: string;
 
   @Column({ type: 'varchar', comment: '상품 가격' })

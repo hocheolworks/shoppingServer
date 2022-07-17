@@ -247,6 +247,16 @@ export class ProductService {
         productImageFilepath: product.productImageFilepath,
         productMinimumEA: product.productMinimumEA,
         productPrice: product.productPrice,
+        productPrice1: product.productPrice1,
+        productPrice2: product.productPrice2,
+        productPrice3: product.productPrice3,
+        productPrice4: product.productPrice4,
+        productPrice5: product.productPrice5,
+        productEA1: product.productEA1,
+        productEA2: product.productEA2,
+        productEA3: product.productEA3,
+        productEA4: product.productEA4,
+        productEA5: product.productEA5,
       })
       .where('id = :productId', { productId: productId })
       .execute();
@@ -269,6 +279,16 @@ export class ProductService {
         productDescription: product.productDescription,
         productMinimumEA: product.productMinimumEA,
         productPrice: product.productPrice,
+        productPrice1: product.productPrice1,
+        productPrice2: product.productPrice2,
+        productPrice3: product.productPrice3,
+        productPrice4: product.productPrice4,
+        productPrice5: product.productPrice5,
+        productEA1: product.productEA1,
+        productEA2: product.productEA2,
+        productEA3: product.productEA3,
+        productEA4: product.productEA4,
+        productEA5: product.productEA5,
       })
       .where('id = :productId', { productId: productId })
       .execute();

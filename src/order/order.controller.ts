@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
@@ -164,5 +165,16 @@ export class OrderController {
     },
   ) {
     return await this.orderService.insertEstimateSheetRequest(params);
+  }
+
+  @Put('payment/status/:orderId')
+  async modifyPaymentStatus(
+    @Param('orderId') orderId: number,
+    @Body()
+    param: {
+      paymentStatus: boolean;
+    },
+  ) {
+    return await this.paymentService.modifyPaymentStatus(param, orderId);
   }
 }

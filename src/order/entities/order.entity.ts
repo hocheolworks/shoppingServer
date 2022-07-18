@@ -82,6 +82,13 @@ class OrderInfoEntity extends CoreEntity {
 
   @Column({ type: 'boolean', comment: '세금계산서 여부', default: false })
   isTaxBill: boolean;
+
+  @Column({
+    type: 'int',
+    comment: '견적서 id, 견적서 결제가 아니라면 -1',
+    default: -1,
+  })
+  estimateId: number;
 }
 
 export default OrderInfoEntity;

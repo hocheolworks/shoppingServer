@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import ProductInfoEntity from 'src/product/entities/product.entity';
-import { Repository } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { InsertOrderInfoDto, SelectOrderInfoDto } from './dtos/order-info.dto';
 import OrderInfoEntity from './entities/order.entity';
 import OrderItemInfoEntity from './entities/orderItem.entity';
@@ -20,10 +20,18 @@ import { getLocation } from 'src/common/functions/functions';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
 import TaxBillInfoEntity from './entities/tax-bill-info.entity';
 import OrderDesignFileInfoEntity from './entities/orderDesignFile.entity';
-import { SheetRequestDto } from './dtos/sheet-request.dto';
+import {
+  SelectEstimateItemsDto,
+  SheetRequestDto,
+} from './dtos/sheet-request.dto';
 import EstimateSheetEntity from './entities/estimate-sheet.entity';
-import EstimateOrderEntity from './entities/estimate-order.entity';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
+import EstimateItemsEntity from './entities/estimate-items.entity';
+import { OrderItemsDto } from './dtos/order-items.dto';
+import { EstimateResponseDto } from './dtos/estimate-response.dto';
+import EstimateResponseEntity from './entities/estimate-response.entity';
+import { EstimateInfoDto } from './dtos/estimate-sheet.dto';
+import EstimateDesignFileInfoEntity from './entities/estimateDesignFile.entity';
 const s3 = new AWS.S3();
 
 AWS.config.update({
@@ -80,8 +88,14 @@ export class OrderService {
     @InjectRepository(EstimateSheetEntity)
     private readonly estimateSheetEntityRepository: Repository<EstimateSheetEntity>,
 
-    @InjectRepository(EstimateOrderEntity)
-    private readonly estimateOrderEntityRepository: Repository<EstimateOrderEntity>,
+    @InjectRepository(EstimateItemsEntity)
+    private readonly estimateItemsEntityRepository: Repository<EstimateItemsEntity>,
+
+    @InjectRepository(EstimateResponseEntity)
+    private readonly estimateResponseEntityRepository: Repository<EstimateResponseEntity>,
+
+    @InjectRepository(EstimateDesignFileInfoEntity)
+    private readonly estimateDesignFileInfoEntityRepository: Repository<EstimateDesignFileInfoEntity>,
 
     private readonly customerService: CustomerService,
     private readonly paymentService: PaymentService,
@@ -119,6 +133,7 @@ export class OrderService {
     if (paymentKey === 'notSendRequest') {
       insertOrder.orderId = tossOrderId;
       await this.insertOrder(insertOrder, false);
+
       if (!tossOrderId.includes('NM')) {
         await this.customerService.clearCart(customerId);
       }
@@ -227,6 +242,10 @@ export class OrderService {
         orderIsPaid: isPaid,
         orderId: insertOrderInfoDto.orderId,
         isTaxBill: insertOrderInfoDto.isTaxBill,
+        estimateId:
+          insertOrderInfoDto.estimateId !== -1
+            ? insertOrderInfoDto.estimateId
+            : -1,
       });
       const result = await this.orderInfoRepository.save(newOrderInfo);
       const cart = insertOrderInfoDto.cart;
@@ -252,6 +271,16 @@ export class OrderService {
           product: product,
           isPrint: cartItem.isPrint,
         });
+      }
+
+      // 견적서 결제일 경우, 견적서 상태까지 변경해줘야함
+      if (insertOrderInfoDto.estimateId !== -1) {
+        await this.estimateSheetEntityRepository.update(
+          { id: insertOrderInfoDto.estimateId },
+          {
+            requestStatus: isPaid ? '결제완료' : '결제대기',
+          },
+        );
       }
 
       return result;
@@ -283,6 +312,13 @@ export class OrderService {
         })
         .where('orderId = :orderId', { orderId: orderId })
         .execute();
+
+      const entityManager = getManager();
+      await entityManager.query(`
+      UPDATE isitworks.estimate_info A INNER JOIN isitworks.order_info B 
+      ON A.id = B.estimateId
+      SET requestStatus = "${orderStatus}"
+      WHERE B.orderId = "${orderId}";`);
     } catch (err) {
       throw new InternalServerErrorException(err);
     }
@@ -376,37 +412,156 @@ export class OrderService {
     sheetRequest: Partial<SheetRequestDto>;
     customerId: number;
     orderItems: Array<InputCartItemInfoDto>;
-  }): Promise<any> {
-    let price = 0;
+  }): Promise<number> {
+    let estimateSheet = undefined;
+    let estimateItems = undefined;
+    let cart = undefined;
 
-    // TODO : 카트에 담겨있는 물건들 + 개수 어떻게 연결시킬건지 생각
-    let item = undefined;
-    params.orderItems.map((val) => {
-      price += val.productCount * val.productPrice;
-    });
+    try {
+      const sheetRequestDto = params.sheetRequest;
 
-    const sheetRequestDto = params.sheetRequest;
-    const estimateSheet = await this.estimateSheetEntityRepository.save({
-      estimateName: sheetRequestDto.newCustomerName,
-      estimateEmail: sheetRequestDto.newCustomerEmail,
-      estimatePhoneNumber: sheetRequestDto.newCustomerPhoneNumber,
-      estimateBusinessName: sheetRequestDto.businessName,
-      estimateBusinessType: sheetRequestDto.businessType,
-      estimateBusinessNumber: sheetRequestDto.businessNumber,
-      estimatePostIndex: sheetRequestDto.newCustomerPostIndex,
-      estimateAddress: sheetRequestDto.newCustomerAddress,
-      estimateAddressDetail: sheetRequestDto.newCustomerAddressDetail,
-      estimatePrintingDraft: sheetRequestDto.printingDraft,
-      estimateDesiredDate: sheetRequestDto.desiredDate,
-      estimateRequestMemo: sheetRequestDto.requestMemo,
-    });
+      estimateSheet = await this.estimateSheetEntityRepository.save({
+        estimateName: sheetRequestDto.newCustomerName,
+        estimateEmail: sheetRequestDto.newCustomerEmail,
+        estimatePhoneNumber: sheetRequestDto.newCustomerPhoneNumber,
+        estimateBusinessName: sheetRequestDto.businessName,
+        estimateBusinessType: sheetRequestDto.businessType,
+        estimateBusinessNumber: sheetRequestDto.businessNumber,
+        estimatePostIndex: sheetRequestDto.newCustomerPostIndex,
+        estimateAddress: sheetRequestDto.newCustomerAddress,
+        estimateAddressDetail: sheetRequestDto.newCustomerAddressDetail,
+        estimateDesiredDate: sheetRequestDto.desiredDate,
+        estimateRequestMemo: sheetRequestDto.requestMemo,
+        customerId: params.customerId,
+      });
 
-    const estimateOrder = await this.estimateOrderEntityRepository.save({
-      sheet: estimateSheet,
-      orderTotalPrice: price,
-      customerId: params.customerId,
-    });
+      for (let i = 0; i < sheetRequestDto.printingDraft.length; i++) {
+        const filePath = sheetRequestDto.printingDraft[i];
+        await this.estimateDesignFileInfoEntityRepository.save({
+          sId: estimateSheet.id,
+          designFilePath: decodeURI(filePath),
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      return 0;
+    }
+
+    try {
+      params.orderItems.map(async (val) => {
+        estimateItems = await this.estimateItemsEntityRepository.save({
+          estimateSheetId: estimateSheet.id,
+          customerId: params.customerId,
+          productId: val.productId,
+          estimateItemEA: val.productCount,
+          orderItemTotalPrice: val.productPrice * val.productCount,
+          isPrint: val.isPrint,
+        });
+
+        cart = await this.customerService.deleteCartItem(
+          params.customerId,
+          val.productId,
+        );
+      });
+    } catch (e) {
+      console.log(e);
+      return 0;
+    }
 
     return 1;
+  }
+
+  async insertEstimateResponse(
+    estimateResponseDto: Partial<EstimateResponseDto>,
+  ): Promise<boolean> {
+    try {
+      await this.estimateResponseEntityRepository.save(estimateResponseDto);
+      await this.estimateSheetEntityRepository.update(
+        { id: estimateResponseDto.estimateSheetId },
+        { requestStatus: '답변완료' },
+      );
+    } catch (err) {
+      console.log(err);
+      throw new InternalServerErrorException(err);
+    }
+
+    return true;
+  }
+
+  async getEstimatesByCustomerId(
+    customerId: number,
+  ): Promise<EstimateSheetEntity[]> {
+    return await this.estimateSheetEntityRepository.find({
+      where: {
+        customerId: customerId,
+      },
+    });
+  }
+
+  async getAllEstimates(): Promise<EstimateSheetEntity[]> {
+    return await this.estimateSheetEntityRepository.find();
+  }
+
+  async selectEstimateInfoBySheetId(sid: number): Promise<EstimateInfoDto> {
+    const selectedItem: EstimateInfoDto =
+      await this.estimateSheetEntityRepository.findOne({ id: sid });
+
+    if (
+      selectedItem.requestStatus === '답변완료' ||
+      selectedItem.requestStatus === '결제대기' ||
+      selectedItem.requestStatus === '결제완료'
+    ) {
+      const answer = await this.estimateResponseEntityRepository.findOne({
+        estimateSheetId: sid,
+      });
+      selectedItem.response = answer;
+    }
+
+    return selectedItem;
+  }
+
+  async selectEstimateItemsBySheetId(
+    sid: number,
+  ): Promise<Partial<SelectEstimateItemsDto>[]> {
+    const items = await this.estimateItemsEntityRepository.find({
+      where: { estimateSheetId: sid },
+    });
+
+    let response: Partial<SelectEstimateItemsDto>[] = [];
+    let item = undefined;
+
+    for (let i = 0; i < items.length; i++) {
+      let dto: Partial<SelectEstimateItemsDto> = {
+        id: items[i].id,
+        estimateSheetId: items[i].estimateSheetId,
+        customerId: items[i].customerId,
+        productId: items[i].productId,
+        estimateItemEA: items[i].estimateItemEA,
+        orderItemTotalPrice: items[i].orderItemTotalPrice,
+        isPrint: items[i].isPrint,
+        createdAt: items[i].createdAt,
+        updatedAt: items[i].updatedAt,
+        deletedAt: items[i].deletedAt,
+      };
+
+      item = await this.productInfoRepository.findOne({
+        id: items[i].productId,
+      });
+      if (item != undefined) {
+        dto.productName = item.productName;
+        dto.productPrice = item.productPrice;
+        dto.productImageFilepath = item.productImageFilepath;
+      }
+      response.push(dto);
+    }
+
+    return response;
+  }
+
+  async getEstimateDesignFilepathsBySheetId(sid: number): Promise<string[]> {
+    const designFiles = await this.estimateDesignFileInfoEntityRepository.find({
+      sId: sid,
+    });
+    return designFiles.map((val) => val.designFilePath);
   }
 }

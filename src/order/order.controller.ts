@@ -19,8 +19,16 @@ import * as multerS3 from 'multer-s3';
 import * as AWS from 'aws-sdk';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { TaxBillInfoDto } from './dtos/tax-bill-info.dto';
-import { SheetRequestDto } from './dtos/sheet-request.dto';
+import {
+  SelectEstimateItemsDto,
+  SheetRequestDto,
+} from './dtos/sheet-request.dto';
 import { InputCartItemInfoDto } from 'src/customer/dtos/cartItem-info.dto';
+import EstimateSheetEntity from './entities/estimate-sheet.entity';
+import EstimateItemsEntity from './entities/estimate-items.entity';
+import EstimateResponseEntity from './entities/estimate-response.entity';
+import { EstimateResponseDto } from './dtos/estimate-response.dto';
+import { EstimateInfoDto } from './dtos/estimate-sheet.dto';
 
 const s3 = new AWS.S3();
 AWS.config.update({
@@ -176,5 +184,45 @@ export class OrderController {
     },
   ) {
     return await this.paymentService.modifyPaymentStatus(param, orderId);
+  }
+
+  @Post('/admin/estimate/response')
+  async insertEstimateResponse(
+    @Body() estimateResponseDto: Partial<EstimateResponseDto>,
+  ) {
+    return await this.orderService.insertEstimateResponse(estimateResponseDto);
+  }
+
+  @Get('/customer/estimate/:customerId')
+  async getEstimatesByCustomerId(
+    @Param('customerId') customerId,
+  ): Promise<EstimateSheetEntity[]> {
+    return await this.orderService.getEstimatesByCustomerId(customerId);
+  }
+
+  @Get('/admin/estimate/all')
+  async getAllEstimates(): Promise<EstimateSheetEntity[]> {
+    return await this.orderService.getAllEstimates();
+  }
+
+  @Get('/estimate/:sid')
+  async selectEstimateInfoBySheetId(
+    @Param('sid') sid: number,
+  ): Promise<EstimateInfoDto> {
+    return await this.orderService.selectEstimateInfoBySheetId(sid);
+  }
+
+  @Get('/estimate/items/:sid')
+  async selectEstimateItemsBySheetId(
+    @Param('sid') sid: number,
+  ): Promise<Partial<SelectEstimateItemsDto>[]> {
+    return await this.orderService.selectEstimateItemsBySheetId(sid);
+  }
+
+  @Get('/estimate/design/:sid')
+  async getEstimateDesignFilepathsBySheetId(
+    @Param('sid') sid: number,
+  ): Promise<Array<string>> {
+    return await this.orderService.getEstimateDesignFilepathsBySheetId(sid);
   }
 }

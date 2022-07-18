@@ -481,6 +481,7 @@ export class OrderService {
         { requestStatus: '답변완료' },
       );
     } catch (err) {
+      console.log(err);
       throw new InternalServerErrorException(err);
     }
 

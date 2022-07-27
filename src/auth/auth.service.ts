@@ -113,17 +113,11 @@ export class AuthService {
       },
     };
 
-    console.log(options);
-
-    console.log(body);
-
-    const result = await axios.post(
+    await axios.post(
       `https://sens.apigw.ntruss.com/sms/v2/services/${process.env.SMS_ID}/messages`,
       body,
       options,
     );
-
-    console.log(result);
 
     return body;
   }

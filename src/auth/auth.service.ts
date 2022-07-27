@@ -88,6 +88,13 @@ export class AuthService {
   }
 
   async sendQuotationAlarmSMS(sendSmsDto: SendSmsDto) {
+    function wait(sec) {
+      let start = Date.now(),
+        now = start;
+      while (now - start < sec * 1000) {
+        now = Date.now();
+      }
+    }
     const customerPhoneNumber = sendSmsDto.phoneNumber;
     const messageBody = `[진솔유통] 견적서 확인 안내
 홈페이지에서 로그인 후 확인하실 수 있습니다.`;
@@ -118,6 +125,8 @@ export class AuthService {
       body,
       options,
     );
+
+    wait(3);
 
     return body;
   }
